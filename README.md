@@ -21,6 +21,46 @@
 
 
 
+<br><br>
+<br><br>
+_____________________________________
+_____________________________________
+<br><br>
+<br><br>
+
+# Links
+
+
+
+<br><br>
+<br><br>
+
+## MongoDB
+
+<br><br>
+
+### Connection String
+- `mongodb://root:test@192.168.49.2.nip.io:30644/`
+
+
+
+<br><br>
+<br><br>
+
+## Gitlab
+
+<br><br>
+
+### UI
+- https://gitlab.local.com
+
+
+
+
+
+
+
+
 
 
 
@@ -246,12 +286,27 @@ helm --namespace dev delete mongodb-dev
 <br><br>
 <br><br>
 
-
 ### Guides
 - https://docs.gitlab.com/charts/development/minikube/
 
+### Links
+- https://gitlab.local.com/users/sign_in
+
 <br><br>
 <br><br>
+
+### Hosts
+- Add this to your `/etc/hosts` file. In your custom-values.yaml you can also add global.hosts.domain=192.168.49.2.nip.io
+```shell
+sudo gedit /etc/hosts
+
+# ==== MINIKUBE ====
+192.168.49.2 gitlab.local.com
+```
+
+<br><br>
+<br><br>
+
 
 ### Add repo
 ```shell
@@ -289,7 +344,6 @@ helm install gitlab-dev ./gitlab/Chart --namespace dev -f ./gitlab/custom-values
 ```
 
 <br><br>
-<br><br>
 
 ### Upgrade Helm Chart
 ```shell
@@ -298,8 +352,6 @@ helm upgrade gitlab-dev ./gitlab/Chart --namespace dev -f ./gitlab/custom-values
 ```
 
 <br><br>
-<br><br>
-
 
 ### Delete Deployment
 ```shell
@@ -307,13 +359,26 @@ kubectl config use-context minikube
 helm --namespace dev delete gitlab-dev
 ```
 
+<br><br>
+
 ### Retrieve IP addresses
 ```shell
 kubectl get ingress -lrelease=gitlab-dev -n dev
 ```
 
+<br><br>
+
 ### Get password
 - You can access the GitLab instance by visiting the domain specified, https://gitlab.192.168.99.100.nip.io is used in these examples. If you manually created the secret for initial root password, you can use that to sign in as root user. If not, GitLab automatically created a random password for the root user. This can be extracted by the following command (replace <name> by name of the release - which is gitlab if you used the command above). 
 ```shell
 kubectl get -n dev secret gitlab-dev-gitlab-initial-root-password -ojsonpath='{.data.password}' | base64 --decode ; echo
+```
+- You can change the password by sign in > right click on your avater > edit > password
+
+
+<br><br>
+
+### Check ingress object
+```shell
+kubectl describe ingress gitlab-dev-webservice-default -n dev
 ```

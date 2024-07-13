@@ -11,7 +11,7 @@ global:
     tls:
       external: true
   hosts:
-    domain: 192.168.49.2.nip.io
+    domain: local.com
     externalIP: 192.168.49.2
   shell:
     # Configure the clone link in the UI to include the high-numbered NodePort
