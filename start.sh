@@ -11,10 +11,7 @@ minikube start \
    --cpus=8 \
    --memory=18G \
    --driver=docker \
-   --addons storage-provisioner \
-   --addons inaccel \
-   --addons kubeflow \
-   --addons logviewer
+   --addons storage-provisioner 
 
 echo "minikube start done.."
 
@@ -27,6 +24,7 @@ TO_IP="${MINIKUBE_IP%.*}.$((${MINIKUBE_IP##*.}+10))"
 
 # make sure we are in the correct context
 kubectl config use minikube
+kubectl create namespace dev
 
 # We have to congiure the loadbalancer IPs manually because of https://github.com/kubernetes/minikube/issues/8283
 # We configure the IPs for metallb loadbalancer in minikubes config.json and then start metallb addon. It will read the config and use the IPs for the metallb secret `config`.
