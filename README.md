@@ -1,5 +1,5 @@
 # Minikube
-
+- For some reason it does not work with double vpn from nordvpn
 
 <br><br>
 <br><br>

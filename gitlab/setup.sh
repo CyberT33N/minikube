@@ -2,11 +2,9 @@
 
 kubectl config use-context minikube
 
-# if kubectl get secret -n dev gitlab-dev-gitlab-initial-root-password >/dev/null 2>&1; then
-#      kubectl delete secret -n dev gitlab-dev-gitlab-initial-root-password
-#      kubectl create secret -n dev generic gitlab-dev-gitlab-initial-root-password --from-literal='password=test'
+# if ! kubectl get secret -n dev gitlab-root-password-custom >/dev/null 2>&1; then
+#      kubectl create secret -n dev generic gitlab-root-password-custom --from-literal='password=1425TTggZZ12!!??'
 # fi
-
 
 helm install gitlab-dev ./gitlab/Chart --namespace dev -f ./gitlab/custom-values.yaml
 

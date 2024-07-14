@@ -4,7 +4,7 @@
 # - Configured to use 192.168.49.2, and nip.io for the domain
 
 # initialRootPassword:
-#   secret: gitlab-dev-gitlab-initial-root-password
+#   secret: gitlab-root-password-custom
 #   key: password
 
 # Minimal settings

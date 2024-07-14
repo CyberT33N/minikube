@@ -11,8 +11,9 @@ if [ "$1" = "--full" ]; then
      echo "Deleting Minikube and reinstalling everything.."
 
      minikube delete
-     
+
      bash ./start.sh
+     bash ./install.sh
 elif [ "$1" = "--mongodb" ]; then
      echo "Reinstalling only MongoDB.."
      helm -n dev uninstall mongodb-dev
