@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -e
 
 # Prevent "Exiting due to PROVIDER_DOCKER_NEWGRP - dial unix

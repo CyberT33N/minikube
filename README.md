@@ -234,11 +234,7 @@ rm -rf ./tmp
 # Create custom-values.yaml
 touch ./mongodb/custom-values.yaml
 
-# Change context
-kubectl config use-context minikube
-
-# Install
-helm install mongodb-dev ./mongodb/Chart --namespace dev -f ./mongodb/custom-values.yaml
+# /home/t33n/Projects/minikube/mongodb/setup.sh
 ```
 
 <br><br>
@@ -336,26 +332,8 @@ rm -rf ./tmp
 # Create custom-values.yaml
 touch ./gitlab/custom-values.yaml
 
-# Change context
-kubectl config use-context minikube
+# /home/t33n/Projects/minikube/mongodb/setup.sh
 
-# Install
-helm install gitlab-dev ./gitlab/Chart --namespace dev -f ./gitlab/custom-values.yaml
-
-# - https://docs.gitlab.com/runner/install/kubernetes.html#providing-a-custom-certificate-for-accessing-gitlab
-# Wait until gitlab UI is ready..
-until kubectl get pods --namespace dev | grep gitlab-dev-webservice-default | grep Running | grep 2/2
-do
-    echo "Wait for healthy gitlab-dev-webservice-default Pods..."
-    sleep 10
-done
-
-# Create cert
-openssl s_client -showcerts -connect gitlab.local.com:443 -servername gitlab.local.com < /dev/null 2>/dev/null | openssl x509 -outform PEM > ./gitlab/gitlab.local.com.crt
-
-kubectl create secret generic gitlab-cert-self \
-  --namespace dev \
-  --from-file=./gitlab/gitlab.local.com.crt
 ```
      - If you get error `download failed after attempts=6: net/http: TLS handshake timeout` in your gitlab-runner deployment try:
      ```shell
@@ -393,6 +371,7 @@ kubectl get ingress -lrelease=gitlab-dev -n dev
 kubectl get -n dev secret gitlab-dev-gitlab-initial-root-password -ojsonpath='{.data.password}' | base64 --decode ; echo
 ```
 - You can change the password by sign in > right click on your avater > edit > password
+  - Or you create a secret and set it to your custom-values.yaml like we did in this guide
 
 
 <br><br>
