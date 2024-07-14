@@ -3,7 +3,7 @@
 kubectl config use-context minikube
 
 # if ! kubectl get secret -n dev gitlab-root-password-custom >/dev/null 2>&1; then
-#      kubectl create secret -n dev generic gitlab-root-password-custom --from-literal='password=1425TTggZZ12!!??'
+#      kubectl create secret -n dev generic gitlab-root-password-custom --from-literal='password=test'
 # fi
 
 helm install gitlab-dev ./gitlab/Chart --namespace dev -f ./gitlab/custom-values.yaml
@@ -27,3 +27,15 @@ fi
 kubectl create secret generic gitlab-cert-self \
 --namespace dev \
 --from-file=./gitlab/gitlab.local.com.crt
+
+NAMESPACE="dev"
+POD_NAME=$(kubectl get pods -n dev | grep gitlab-dev-toolbox | awk '{print $1}')
+
+# Prüfen, ob der Pod-Name gefunden wurde
+if [ -z "$POD_NAME" ]; then
+  echo "Kein Pod mit dem Namen 'gitlab-dev-toolbox' gefunden."
+  exit 1
+fi
+
+# Befehl im Pod ausführen
+kubectl exec -it $POD_NAME -n $NAMESPACE -- bash -c "gitlab-rails runner \"user = User.find_by(username: 'root'); user.password = '69aZc996'; user.password_confirmation = '69aZc996'; user.save!\""

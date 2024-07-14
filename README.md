@@ -53,6 +53,7 @@ _____________________________________
 
 ### UI
 - https://gitlab.local.com
+- root:69aZc996
 
 
 
@@ -365,14 +366,53 @@ kubectl get ingress -lrelease=gitlab-dev -n dev
 
 <br><br>
 
-### Get password
+### Change password
+
+<br><br>
+
+#### Method #1 - UI
 - You can access the GitLab instance by visiting the domain specified, https://gitlab.192.168.99.100.nip.io is used in these examples. If you manually created the secret for initial root password, you can use that to sign in as root user. If not, GitLab automatically created a random password for the root user. This can be extracted by the following command (replace <name> by name of the release - which is gitlab if you used the command above). 
 ```shell
 kubectl get -n dev secret gitlab-dev-gitlab-initial-root-password -ojsonpath='{.data.password}' | base64 --decode ; echo
 ```
 - You can change the password by sign in > right click on your avater > edit > password
-  - Or you create a secret and set it to your custom-values.yaml like we did in this guide
 
+<br><br>
+
+#### Method #2 - gitlab-rails
+- Use gitlab-rails. The pod gitlab-dev-toolbox is able to dit
+```shell
+kubectl create secret generic gitlab-cert-self \
+--namespace dev \
+--from-file=./gitlab/gitlab.local.com.crt
+
+NAMESPACE="dev"
+POD_NAME=$(kubectl get pods -n dev | grep gitlab-dev-toolbox | awk '{print $1}')
+
+# Prüfen, ob der Pod-Name gefunden wurde
+if [ -z "$POD_NAME" ]; then
+  echo "Kein Pod mit dem Namen 'gitlab-dev-toolbox' gefunden."
+  exit 1
+fi
+
+# Befehl im Pod ausführen
+kubectl exec -it $POD_NAME -n $NAMESPACE -- bash -c "gitlab-rails runner \"user = User.find_by(username: 'root'); user.password = 'passwordHere'; user.password_confirmation = 'passwordHere'; user.save!\""
+```
+
+<br><br>
+
+#### Method 3 - Helm chart (Not tested)
+You create a secret and set it to your custom-values.yaml like we did in this guide
+```shell
+kubectl create secret -n dev generic gitlab-root-password-custom --from-literal='password=test'
+
+```
+```yaml
+# initialRootPassword:
+#   secret: gitlab-root-password-custom
+#   key: password
+
+```
 
 <br><br>
 
