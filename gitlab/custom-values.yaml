@@ -37,4 +37,4 @@ gitlab:
 
 # Provide gitlab-runner with secret object containing self-signed certificate chain
 gitlab-runner:
-  certsSecretName: gitlab-wildcard-tls-chain
+  certsSecretName: gitlab-cert-self

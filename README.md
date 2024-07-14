@@ -341,7 +341,26 @@ kubectl config use-context minikube
 
 # Install
 helm install gitlab-dev ./gitlab/Chart --namespace dev -f ./gitlab/custom-values.yaml
+
+# - https://docs.gitlab.com/runner/install/kubernetes.html#providing-a-custom-certificate-for-accessing-gitlab
+# Wait until gitlab UI is ready..
+until kubectl get pods --namespace dev | grep gitlab-dev-webservice-default | grep Running | grep 2/2
+do
+    echo "Wait for healthy gitlab-dev-webservice-default Pods..."
+    sleep 10
+done
+
+# Create cert
+openssl s_client -showcerts -connect gitlab.local.com:443 -servername gitlab.local.com < /dev/null 2>/dev/null | openssl x509 -outform PEM > ./gitlab/gitlab.local.com.crt
+
+kubectl create secret generic gitlab-cert-self \
+  --namespace dev \
+  --from-file=./gitlab/gitlab.local.com.crt
 ```
+     - If you get error `download failed after attempts=6: net/http: TLS handshake timeout` in your gitlab-runner deployment try:
+     ```shell
+     unset all_proxy
+     ```
 
 <br><br>
 
