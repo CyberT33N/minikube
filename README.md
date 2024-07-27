@@ -479,6 +479,7 @@ sudo gedit /etc/hosts
 
 # ==== MINIKUBE ====
 192.168.49.2 gitlab.local.com
+192.168.49.2 minio.local.com
 ```
 
 <br><br>
