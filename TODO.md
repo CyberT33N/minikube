@@ -1,0 +1,1 @@
+hardcoden aktuell überall context wechsel auf minikube. sollten dei sh datei anpassen,d ass sie args verwenden mit environment

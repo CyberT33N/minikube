@@ -30,6 +30,17 @@ _____________________________________
 
 # Links
 
+<br><br>
+<br><br>
+
+
+## MinIO
+- http://192.168.49.2.nip.io:30001/login
+- User:test69696969 | Password:test69696969
+
+
+
+
 
 
 <br><br>
@@ -176,6 +187,175 @@ helm install cert-manager jetstack/cert-manager --namespace cert-manager --versi
 kubectl delete -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.1/cert-manager.crds.yaml
 kubectl delete namespace cert-manager
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+<br><br>
+<br><br>
+<br><br>
+
+
+## MinIO
+
+<br><br>
+<br><br>
+
+### Links
+- http://192.168.49.2.nip.io:30001/login
+- User:test69696969 | Password:test69696969
+
+<br><br>
+<br><br>
+
+
+### Uninstall
+
+<br><br>
+
+#### Full
+```shell
+# Delete the MinIO namespace and all resources within it
+kubectl delete namespace minio-dev
+```
+
+<br><br>
+
+#### Single steps
+```shell
+# Lösche den Pod
+kubectl delete pod minio -n minio-dev
+
+# Lösche das Secret
+kubectl delete secret minio-secret -n minio-dev
+
+# Lösche den PersistentVolumeClaim
+kubectl delete pvc minio-pvc -n minio-dev
+
+# Lösche den PersistentVolume
+kubectl delete pv minio-pv
+
+# Lösche den Service
+kubectl delete service minio-service -n minio-dev
+
+# Lösche den Namespace
+kubectl delete namespace minio-dev
+```
+
+
+<br><br>
+<br><br>
+
+### Install
+```shell
+bash ./minio/setup.sh
+```
+
+<br><br>
+<br><br>
+
+### Re-install
+```shell
+bash ./reinstall.sh --minio
+```
+
+<br><br>
+<br><br>
+
+### Ugprade
+```shell
+bash ./minio/setup.sh
+```
+- For most cases you can just re-run it and it will detect if there are any changes. But in other cases like e.g. where we want to change credentials you have to delete the pod. However, for local environemnts you can just run the reinstall script above. This will be the easieast way when yua re doing some changes
+
+
+
+
+<br><br>
+<br><br>
+
+### MinIO Client
+
+<br><br>
+
+#### Install
+- https://min.io/docs/minio/linux/reference/minio-mc.html
+- Check architecture `uname -m`
+  - x86_64 means intel
+
+### x86_64
+```shell
+# ==== INSTALL =====
+curl https://dl.min.io/client/mc/release/linux-amd64/mc \
+  --create-dirs \
+  -o $HOME/minio-binaries/mc
+
+chmod +x $HOME/minio-binaries/mc
+export PATH=$PATH:$HOME/minio-binaries/
+
+# mc --help
+
+# ==== SET ALIAS =====
+# When you use zsh then jsut run the mc command on zsh shell
+bash +o history
+mc alias set minio http://192.168.49.2.nip.io:30000 test69696969 test69696969
+bash -o history
+
+# ==== TEST CONNECTION =====
+mc admin info minio
+```
+
+
+<br><br>
+<br><br>
+
+### MinIO for Gitlab
+- https://docs.gitlab.com/charts/advanced/external-object-storage/minio.html
+
+```shell
+mc mb gitlab-registry-storage
+mc mb gitlab-lfs-storage
+mc mb gitlab-artifacts-storage
+mc mb gitlab-uploads-storage
+mc mb gitlab-packages-storage
+mc mb gitlab-backup-storage
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
