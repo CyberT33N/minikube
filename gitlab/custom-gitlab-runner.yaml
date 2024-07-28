@@ -1,0 +1,82 @@
+certsSecretName: gitlab-dev-wildcard-tls-chain
+
+gitlabUrl: https://gitlab.local.com
+runnerRegistrationToken: CWKVm4CL2yT9gIgI9INjGjriLZEKkSm4dbEYOmw9xeSY259nHatks5RkJgKipetK
+
+rbac: 
+  create: true
+
+# global:
+#   minio:
+#     enabled: true
+
+runners:
+  config: |
+    [[runners]]
+      image = "ubuntu:22.04"
+
+      [runners.cache]
+        Type = "s3"
+        Path = "gitlab-runner"
+        Shared = true
+        [runners.cache.s3]
+          AccessKey = "XXXXXXXXXXXXXXXXXXXXXXXXX"
+          SecretKey = "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"
+
+          ServerAddress = "https://minio.local.com:443"
+          BucketName = "runner-cache"
+          BucketLocation = "us-east-1"
+          Insecure = false
+
+      [runners.docker]
+        volumes = ["ca.crt:/etc/gitlab-runner/certs/ca.crt:ro", "tls.crt:/etc/gitlab-runner/certs/tls.crt:ro", "tls.key:/etc/gitlab-runner/certs/tls.key:ro"]
+        tls-ca-file = "/etc/gitlab-runner/certs/ca.crt"
+        tls-cert-file = "/etc/gitlab-runner/certs/tls.crt"
+        tls-key-file = "/etc/gitlab-runner/certs/tls.key"
+
+  cache:
+    ## General settings
+    cacheType: s3
+
+    ## S3 settings
+    s3ServerAddress: minio.local.com:443
+    s3BucketName: gitlab-runner
+    secretName: gitlab-dev-minio-secret
+
+
+# runners:
+#     locked: false
+#     # Set secret to an arbitrary value because the runner chart renders the gitlab-runner.secret template only if it is not empty.
+#     # The parent/GitLab chart overrides the template to render the actual secret name.
+#     secret: "nonempty"
+#     config: |
+#       [[runners]]
+#         # Copy and install CA certificate before each job
+#         pre_build_script = """
+#         apt-get update -y > /dev/null
+#         apt-get install -y ca-certificates openssl curl > /dev/null
+
+#         kubectl get secret gitlab-dev-wildcard-tls-ca -o jsonpath="{.data['ca\.crt']}" | base64 --decode > /etc/gitlab-runner/certs/ca.crt
+#         kubectl get secret gitlab-dev-wildcard-tls -o jsonpath="{.data['tls\.crt']}" | base64 --decode > /etc/gitlab-runner/certs/tls.crt
+#         kubectl get secret gitlab-dev-wildcard-tls -o jsonpath="{.data['tls\.key']}" | base64 --decode > /etc/gitlab-runner/certs/tls.key
+
+
+#         # openssl s_client -showcerts -connect minio.local.com:443 -servername minio.local.com < /dev/null 2>/dev/null | openssl x509 -outform PEM > minio.local.com.crt
+
+#         # cp minio.local.com.crt /usr/local/share/ca-certificates/minio.local.com.crt
+#         # cp minio.local.com.crt /etc/gitlab-runner/certs/minio.local.com.crt
+#         # update-ca-certificates
+#         """
+
+#         image = "ubuntu:22.04"
+#         {{- if .Values.global.minio.enabled }}
+#         [runners.cache]
+#           Type = "s3"
+#           Path = "gitlab-runner"
+#           Shared = true
+#           [runners.cache.s3]
+#             ServerAddress = {{ include "gitlab-runner.cache-tpl.s3ServerAddress" . }}
+#             BucketName = "runner-cache"
+#             BucketLocation = "us-east-1"
+#             Insecure = false
+#         {{ end }}

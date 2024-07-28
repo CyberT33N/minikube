@@ -9,14 +9,19 @@
 
 # Minimal settings
 global:
+  minio:
+    enabled: true
+
   ingress:
     configureCertmanager: false
     class: "nginx"
     tls:
       external: true
+
   hosts:
     domain: local.com
     externalIP: 192.168.49.2
+    
   shell:
     # Configure the clone link in the UI to include the high-numbered NodePort
     # value from below (`gitlab.gitlab-shell.service.nodePort`)
@@ -40,4 +45,34 @@ gitlab:
 
 # Provide gitlab-runner with secret object containing self-signed certificate chain
 gitlab-runner:
-  certsSecretName: gitlab-cert-self
+  install: true
+  certsSecretName: gitlab-dev-wildcard-tls-chain
+
+  runners:
+    cache:
+    ## S3 the name of the secret.
+      secretName: minio-dev
+    ## Use this line for access using gcs-access-id and gcs-private-key
+    # secretName: gcsaccess
+    ## Use this line for access using google-application-credentials file
+    # secretName: google-application-credentials
+    ## Use this line for access using Azure with azure-account-name and azure-account-key
+    # secretName: azureaccess
+
+    config: |
+      [[runners]]
+        image = "ubuntu:22.04"
+
+        {{- if .Values.global.minio.enabled }}
+        [runners.cache]
+          Type = "s3"
+          Path = "gitlab-runner"
+          Shared = true
+          [runners.cache.s3]
+            AccessKey = "test69696969"
+            SecretKey = "test69696969"
+            ServerAddress = "192.168.49.2.nip.io:30000"
+            BucketName = "runner-cache"
+            BucketLocation = "us-east-1"
+            Insecure = true
+        {{ end }}

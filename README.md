@@ -1,10 +1,111 @@
 # Minikube
 - For some reason it does not work with double vpn from nordvpn
 
+
+
+
+## ufw
+- https://github.com/CyberT33N/ufw-cheat-sheet/blob/main/README.md#deny-forward-incoming--outgoing
+```shell
+sudo ufw reset
+sudo ufw enable
+
+# ---------------------------
+
+# =====================
+# ====== GLOBAL =======
+# =====================
+
+# Deny all
+sudo ufw default deny forward
+sudo ufw default deny incoming
+sudo ufw default deny outgoing
+
+# ---------------------------
+
+# =====================
+# ====== VPN ==========
+# =====================
+
+# If you want to allow any outgoing port
+# sudo ufw allow out on nordlynx
+
+# Allow only http, https & DNS
+sudo ufw allow out on nordlynx to any port 80,443,53,8080 proto tcp
+sudo ufw allow out on nordlynx to any port 80,443,53,8080 proto udp
+
+# git ssh
+sudo ufw allow out on nordlynx to any port 22 proto tcp
+
+# docker - will be also used in minikube start- They use IPv6 Range
+sudo ufw allow out on nordlynx from fe80::/64 to any port 22
+
+
+
+# ---------------------------
+
+# =====================
+# ====== MINIKUBE =====
+# =====================
+
+# Erlaube Zugriff auf Minikube IP
+sudo ufw allow out on br-66dceb3ba20e to 192.168.49.2
+
+# Erlaube ausgehenden Traffic auf Port 8443 (Kubernetes API Server) über den Minikube-Adapter
+sudo ufw allow out on br-66dceb3ba20e to any port 8443 proto tcp comment 'Allow Kubernetes API Server'
+
+# Erlaube ausgehenden Traffic auf den Ports 30000-32767 (NodePorts für Kubernetes Services) über den Minikube-Adapter
+sudo ufw allow out on br-66dceb3ba20e to any port 30000:32767 proto tcp comment 'Allow NodePorts for Kubernetes Services'
+
+# Erlaube ausgehenden Traffic auf den Ports 2379-2380 (etcd) über den Minikube-Adapter
+sudo ufw allow out on br-66dceb3ba20e to any port 2379:2380 proto tcp comment 'Allow etcd communication'
+
+# Erlaube ausgehenden Traffic auf Port 53 (DNS, UDP) über den Minikube-Adapter
+sudo ufw allow out on br-66dceb3ba20e to any port 53 proto udp comment 'Allow DNS (UDP)'
+
+# Erlaube ausgehenden Traffic auf Port 53 (DNS, TCP) über den Minikube-Adapter
+sudo ufw allow out on br-66dceb3ba20e to any port 53 proto tcp comment 'Allow DNS (TCP)'
+
+# Erlaube ausgehenden Traffic auf Port 10250 (Kubelet) über den Minikube-Adapter
+sudo ufw allow out on br-66dceb3ba20e to any port 10250 proto tcp comment 'Allow Kubelet communication'
+
+# Erlaube ausgehenden Traffic auf Port 22 (SSH) über den Minikube-Adapter
+sudo ufw allow out on br-66dceb3ba20e to any port 22 proto tcp comment 'Allow SSH access'
+
+# ---------------------------
+
+# =====================
+# ====== WLAN =========
+# =====================
+
+# Allow outgoing traffic from your device to DNS (53), NORDVPN(51820) & OPENVPN (1197)
+sudo ufw allow out on wlp0s20f3 to any port 53,51820,1197 proto udp
+
+# Allow NTP
+# sudo ufw allow out on wlp0s20f3 to any port 123 proto udp comment 'allow NTP'
+
+# Allow local networks (optional)
+sudo ufw allow out on wlp0s20f3 to 192.168.0.0/16 comment 'allow local network'
+
+# ---------------------------
+
+sudo ufw status verbose
+sudo ufw enable
+```
+
+
+
+
+
+
+
+
+
+
 <br><br>
 <br><br>
 
-# start
+## start
 - Will start the minikube and create namespace `dev`
 - `start.sh`
 
@@ -13,7 +114,7 @@
 <br><br>
 <br><br>
 
-# install
+## install
 - Will install all deployments
 - `install.sh`
 
@@ -207,6 +308,165 @@ kubectl delete namespace cert-manager
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+<br><br>
+<br><br>
+<br><br>
+
+## MongoDB
+
+### Connection String
+- `mongodb://root:test@192.168.49.2.nip.io:30644/`
+
+<br><br>
+<br><br>
+
+### Add repo
+```shell
+# Add bitnami repo
+helm repo add bitnami https://charts.bitnami.com/bitnami
+
+# Update helm repo
+helm repo update
+
+# Auflisten der verfügbaren Helm Chart Versionen
+helm search repo bitnami/mongodb --versions
+```
+
+<br><br>
+<br><br>
+
+### Install Helm Chart
+```shell
+# This will download the mongodb helm chart to the folder ./mongodb/Chart
+cd ~/Projects/minikube
+mkdir -p ./mongodb/Chart
+
+# 15.6.12 = MongoDB 7
+helm pull bitnami/mongodb --version 15.6.12 --untar --untardir ./tmp
+cp -r ./tmp/mongodb/* ./mongodb/Chart
+rm -rf ./tmp
+
+# Create custom-values.yaml
+touch ./mongodb/custom-values.yaml
+
+# /home/t33n/Projects/minikube/mongodb/setup.sh
+```
+
+<br><br>
+<br><br>
+
+### Upgrade Helm Chart
+```shell
+kubectl config use-context minikube
+helm upgrade mongodb-dev ./mongodb/Chart --namespace dev -f ./mongodb/custom-values.yaml --atomic
+```
+
+### Delete Deployment
+```shell
+kubectl config use-context minikube
+helm --namespace dev delete mongodb-dev
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <br><br>
 <br><br>
 <br><br>
@@ -328,14 +588,15 @@ mc admin info minio
 
 ### MinIO for Gitlab
 - https://docs.gitlab.com/charts/advanced/external-object-storage/minio.html
+- You only have to create the buckets below when you fully will switch to external object storage. When you only want to use this instance for the gitlab runnter then it is no needed.
 
 ```shell
-mc mb gitlab-registry-storage
-mc mb gitlab-lfs-storage
-mc mb gitlab-artifacts-storage
-mc mb gitlab-uploads-storage
-mc mb gitlab-packages-storage
-mc mb gitlab-backup-storage
+mc mb minio/gitlab-registry-storage
+mc mb minio/gitlab-lfs-storage
+mc mb minio/gitlab-artifacts-storage
+mc mb minio/gitlab-uploads-storage
+mc mb minio/gitlab-packages-storage
+mc mb minio/gitlab-backup-storage
 ```
 
 
@@ -350,88 +611,6 @@ mc mb gitlab-backup-storage
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-
-## MongoDB
-
-### Connection String
-- `mongodb://root:test@192.168.49.2.nip.io:30644/`
-
-<br><br>
-<br><br>
-
-### Add repo
-```shell
-# Add bitnami repo
-helm repo add bitnami https://charts.bitnami.com/bitnami
-
-# Update helm repo
-helm repo update
-
-# Auflisten der verfügbaren Helm Chart Versionen
-helm search repo bitnami/mongodb --versions
-```
-
-<br><br>
-<br><br>
-
-### Install Helm Chart
-```shell
-# This will download the mongodb helm chart to the folder ./mongodb/Chart
-cd ~/Projects/minikube
-mkdir -p ./mongodb/Chart
-
-# 15.6.12 = MongoDB 7
-helm pull bitnami/mongodb --version 15.6.12 --untar --untardir ./tmp
-cp -r ./tmp/mongodb/* ./mongodb/Chart
-rm -rf ./tmp
-
-# Create custom-values.yaml
-touch ./mongodb/custom-values.yaml
-
-# /home/t33n/Projects/minikube/mongodb/setup.sh
-```
-
-<br><br>
-<br><br>
-
-### Upgrade Helm Chart
-```shell
-kubectl config use-context minikube
-helm upgrade mongodb-dev ./mongodb/Chart --namespace dev -f ./mongodb/custom-values.yaml --atomic
-```
-
-### Delete Deployment
-```shell
-kubectl config use-context minikube
-helm --namespace dev delete mongodb-dev
-```
 
 
 
@@ -459,12 +638,20 @@ helm --namespace dev delete mongodb-dev
 <br><br>
 
 ## Gitlab
+- The Gitlab helm Chart will if configured with the minikube example from official docs their own self-signed certificates and we do not have to have to worry about and this is what we will do. If needed you can create own certs and include them but it is not recommended because it will be a lot of work. You basicly only have to include the genereated secret to the gitlab-runner with:
+```yaml
+gitlab-runner:
+  install: true
+  certsSecretName: gitlab-dev-wildcard-tls-chain
+```
 
 <br><br>
 <br><br>
 
 ### Guides
 - https://docs.gitlab.com/charts/development/minikube/
+
+<br><br>
 
 ### Links
 - https://gitlab.local.com/users/sign_in
@@ -481,6 +668,115 @@ sudo gedit /etc/hosts
 192.168.49.2 gitlab.local.com
 192.168.49.2 minio.local.com
 ```
+
+<br><br>
+<br><br>
+
+
+### Minio
+- I did not find a way to get the included minio release running because of the tls self signed cert problem
+    - https://gitlab.com/gitlab-org/charts/gitlab-runner/-/issues/75#note_211405230
+
+- But we can deploy our own minio instance and then use it inside of our gitlab-runner. Please check the MinIO Install section above or run `./minio/setup.sh`
+  - The setup will also create the needed bucket `runner-cache` for the gitlab-runner
+  - It will also create the needed secret `minio-dev` inside of our `dev` namespace
+  ```yaml
+  gitlab-runner:
+    runners:
+      cache:
+      ## S3 the name of the secret.
+        secretName: minio-dev
+  ```
+
+- In order to use our own minio instance with the gitlab runner we have to make sure to set the correct config:
+```yaml
+# Provide gitlab-runner with secret object containing self-signed certificate chain
+gitlab-runner:
+  install: true
+  certsSecretName: gitlab-dev-wildcard-tls-chain
+
+  runners:
+    cache:
+    ## S3 the name of the secret.
+      secretName: minio-dev
+    ## Use this line for access using gcs-access-id and gcs-private-key
+    # secretName: gcsaccess
+    ## Use this line for access using google-application-credentials file
+    # secretName: google-application-credentials
+    ## Use this line for access using Azure with azure-account-name and azure-account-key
+    # secretName: azureaccess
+
+    config: |
+      [[runners]]
+        image = "ubuntu:22.04"
+
+        {{- if .Values.global.minio.enabled }}
+        [runners.cache]
+          Type = "s3"
+          Path = "gitlab-runner"
+          Shared = true
+          [runners.cache.s3]
+            AccessKey = "test69696969"
+            SecretKey = "test69696969"
+            ServerAddress = "192.168.49.2.nip.io:30000"
+            BucketName = "runner-cache"
+            BucketLocation = "us-east-1"
+            Insecure = true
+        {{ end }}
+```
+- **AccessKey & SecretKey must be set or you get error that the url is not found. The values must be valid**
+- In our case the minio instance is not https so set `Insecure = true`
+- As mentioned before the bucket must already exists `mc mb minio/runner-cache`
+
+
+
+
+<br><br>
+<br><br>
+
+### Certs
+- This section is not needed for the gitlab helm chart for minikube because of automated creation for self-signed certs. However, it is maybe usefully for somebody
+
+<br><br>
+
+#### Create self signed cert
+```shell
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout gitlab.local.com.key -out gitlab.local.com.crt -subj "/C=DE/ST=Some-State/L=City/O=Organization/OU=Department/CN=local.com"
+```
+
+<br><br>
+
+### Download cert and create secret
+
+```shell
+# Create cert
+openssl s_client -showcerts -connect gitlab.local.com:443 -servername gitlab.local.com < /dev/null 2>/dev/null | openssl x509 -outform PEM > ./gitlab/gitlab.local.com.crt
+
+if kubectl get secret -n dev gitlab-cert-self >/dev/null 2>&1; then
+    kubectl delete secret -n dev gitlab-cert-self
+fi
+
+kubectl create secret generic gitlab-cert-self \
+--namespace dev \
+--from-file=./gitlab/gitlab.local.com.crt
+```
+
+
+
+<br><br>
+<br><br>
+
+### Git
+- We use NodePort for gitlab-shell in order to be able to push into our repos. Git is available over port 32022. Check this guide for how to to create and to add SSH Key (https://github.com/CyberT33N/git-cheat-sheet/blob/main/README.md#ssh)
+  - Then after this you run `ssh-add ~/.ssh/github/id_ecdsa` and then after this:
+```shell
+git remote add gitlabInternal ssh://git@gitlab.local.com:32022/websites/test.git
+
+```
+
+
+
+
 
 <br><br>
 <br><br>
@@ -514,8 +810,6 @@ rm -rf ./tmp
 # Create custom-values.yaml
 touch ./gitlab/custom-values.yaml
 
-# /home/t33n/Projects/minikube/mongodb/setup.sh
-
 ```
      - If you get error `download failed after attempts=6: net/http: TLS handshake timeout` in your gitlab-runner deployment try:
      ```shell
@@ -532,7 +826,7 @@ helm upgrade gitlab-dev ./gitlab/Chart --namespace dev -f ./gitlab/custom-values
 
 <br><br>
 
-### Delete Deployment
+### Delete release
 ```shell
 kubectl config use-context minikube
 helm --namespace dev delete gitlab-dev
@@ -604,10 +898,3 @@ kubectl describe ingress gitlab-dev-webservice-default -n dev
 
 <br><br>
 
-### Git
-- Git is available over port 32022. Check this guide for how to to create and to add SSH Key (https://github.com/CyberT33N/git-cheat-sheet/blob/main/README.md#ssh)
-  - Then after this you run `ssh-add ~/.ssh/github/id_ecdsa` and then after this:
-```shell
-git remote add gitlabInternal ssh://git@gitlab.local.com:32022/websites/anyTest.git
-
-```

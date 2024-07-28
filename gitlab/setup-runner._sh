@@ -1,0 +1,12 @@
+cd "$(dirname "$0")"; printf "\nCurrent working directory:"; pwd
+
+rm -rf ca.crt tls.crt tls.key
+
+kubectl get -n dev secret gitlab-dev-wildcard-tls-ca -o jsonpath="{.data['ca\.crt']}" | base64 --decode > ca.crt
+kubectl get -n dev secret gitlab-dev-wildcard-tls -o jsonpath="{.data['tls\.crt']}" | base64 --decode > tls.crt
+kubectl get -n dev secret gitlab-dev-wildcard-tls -o jsonpath="{.data['tls\.key']}" | base64 --decode > tls.key
+
+# helm template -n dev gitlab-dev-gitlab-runner ./Chart/charts/gitlab-runner -f ./custom-gitlab-runner.yaml
+
+helm uninstall -n dev gitlab-dev-gitlab-runner 
+helm install -n dev gitlab-dev-gitlab-runner ./Chart/charts/gitlab-runner -f ./custom-gitlab-runner.yaml

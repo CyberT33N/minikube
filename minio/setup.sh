@@ -4,3 +4,5 @@ kubectl config use-context minikube
 
 kubectl apply -f ./minio-dev.yaml
 # kubectl get pods -n minio-dev
+
+mc mb minio/runner-cache
