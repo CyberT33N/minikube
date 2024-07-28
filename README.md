@@ -122,6 +122,17 @@ sudo ufw enable
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 <br><br>
 <br><br>
 _____________________________________
@@ -153,6 +164,9 @@ _____________________________________
 
 ### Connection String
 - `mongodb://root:test@192.168.49.2.nip.io:30644/`
+
+
+
 
 
 
@@ -479,8 +493,14 @@ helm --namespace dev delete mongodb-dev
 <br><br>
 
 ### Links
+
+#### UI
 - http://192.168.49.2.nip.io:30001/login
 - User:test69696969 | Password:test69696969
+
+#### API
+- 192.168.49.2.nip.io:30000
+- AccessKey:test69696969 | SecretKey:test69696969
 
 <br><br>
 <br><br>
@@ -632,6 +652,7 @@ mc mb minio/gitlab-backup-storage
 
 
 
+
 <br><br>
 <br><br>
 <br><br>
@@ -655,6 +676,16 @@ gitlab-runner:
 
 ### Links
 - https://gitlab.local.com/users/sign_in
+
+<br><br>
+
+#### UI
+- https://gitlab.local.com
+- root:69aZc996
+
+
+
+
 
 <br><br>
 <br><br>
