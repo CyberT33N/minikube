@@ -1,1 +1,2 @@
-hardcoden aktuell überall context wechsel auf minikube. sollten dei sh datei anpassen,d ass sie args verwenden mit environment
+# TODO
+- Remove the hardcoded context change to minikbue from the .sh files and replace it to a central point or add args
