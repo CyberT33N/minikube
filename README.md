@@ -100,6 +100,10 @@ _____________________________
 
 
 
+
+
+
+
 <br><br>
 <br><br>
 _____________________________
@@ -175,6 +179,7 @@ minikube ip
 
 
 
+
 <br><br>
 <br><br>
 _____________________________________
@@ -228,6 +233,7 @@ kubectl describe ingress gitlab-dev-webservice-default -n dev
 
 
 
+
 <br><br>
 <br><br>
 _____________________________________
@@ -241,6 +247,9 @@ _____________________________________
 <br><br>
 
 ## cert-manager
+
+<details>
+<summary>Click to expand..</summary>
 
 <br><br>
 <br><br>
@@ -263,7 +272,7 @@ kubectl delete -f https://github.com/cert-manager/cert-manager/releases/download
 kubectl delete namespace cert-manager
 ```
 
-
+</details>
 
 
 
@@ -320,6 +329,10 @@ kubectl delete namespace cert-manager
 
 ## MongoDB
 
+<details>
+<summary>Click to expand..</summary>
+
+
 ### Connection String
 - `mongodb://root:test@192.168.49.2.nip.io:30644/`
 
@@ -373,7 +386,7 @@ kubectl config use-context minikube
 helm --namespace dev delete mongodb-dev
 ```
 
-
+</details>
 
 
 
@@ -448,6 +461,10 @@ helm --namespace dev delete mongodb-dev
 
 
 ## MinIO
+
+<details>
+<summary>Click to expand..</summary>
+
 
 <br><br>
 <br><br>
@@ -580,7 +597,7 @@ mc mb minio/gitlab-backup-storage
 ```
 
 
-
+</details>
 
 
 
@@ -619,6 +636,10 @@ mc mb minio/gitlab-backup-storage
 <br><br>
 
 ## Gitlab
+<details>
+<summary>Click to expand..</summary>
+
+
 - The Gitlab helm Chart will if configured with the minikube example from official docs their own self-signed certificates and we do not have to have to worry about and this is what we will do. If needed you can create own certs and include them but it is not recommended because it will be a lot of work. You basicly only have to include the genereated secret to the gitlab-runner with:
 ```yaml
 gitlab-runner:
@@ -889,3 +910,4 @@ kubectl describe ingress gitlab-dev-webservice-default -n dev
 
 <br><br>
 
+</details>
