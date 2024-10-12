@@ -1,53 +1,61 @@
 #!/bin/bash
 
+# 📜 Enable strict error handling
 set -e
 
-# Prevent "Exiting due to PROVIDER_DOCKER_NEWGRP - dial unix
-# /var/run/docker.sock: connect: permission denied"
+# 🛠️ Prevent permission issues with Docker
+# Uncomment the line below to add the current user to the Docker group.
+# This allows the user to execute Docker commands without sudo.
 # sudo usermod -aG docker $USER && newgrp docker
 
-_directory=$(dirname $0)
+# 📂 Set the script's directory
+_directory=$(dirname "$0")
 
+# 🚀 Start Minikube with specified resources and enable storage provisioner
 minikube start \
-   --cpus=8 \
-   --memory=18G \
-   --driver=docker \
-   --addons storage-provisioner 
+   --cpus=8 \                     # Allocate 8 CPUs
+   --memory=18G \                 # Allocate 18 GB of memory
+   --driver=docker \              # Use Docker as the driver
+   --addons storage-provisioner    # Enable storage provisioner add-on
 
-echo "minikube start done.."
+echo "✅ Minikube started successfully!"
 
+# 🌐 Get the Minikube IP address
 MINIKUBE_IP=$(minikube ip)
+echo "🌟 Minikube IP: $MINIKUBE_IP"
 
-echo "Minikube IP: $MINIKUBE_IP"
+# 🔧 Configure IP ranges for LoadBalancer
+FROM_IP="${MINIKUBE_IP%.*}.$((${MINIKUBE_IP##*.}+1))"  # Starting IP
+TO_IP="${MINIKUBE_IP%.*}.$((${MINIKUBE_IP##*.}+10))"   # Ending IP
 
-FROM_IP="${MINIKUBE_IP%.*}.$((${MINIKUBE_IP##*.}+1))"
-TO_IP="${MINIKUBE_IP%.*}.$((${MINIKUBE_IP##*.}+10))"
-
-# make sure we are in the correct context
+# 🔑 Ensure we are using the correct Kubernetes context
 kubectl config use minikube
-kubectl create namespace dev
+kubectl create namespace dev  # Create a development namespace
 
-# We have to congiure the loadbalancer IPs manually because of https://github.com/kubernetes/minikube/issues/8283
-# We configure the IPs for metallb loadbalancer in minikubes config.json and then start metallb addon. It will read the config and use the IPs for the metallb secret `config`.
-# This way we can avoid interactive command `minikube addons configure metallb`, and the ips are persistent.
-cat ~/.minikube/profiles/minikube/config.json | jq ".KubernetesConfig.LoadBalancerStartIP=\"$FROM_IP\"" | jq ".KubernetesConfig.LoadBalancerEndIP=\"$TO_IP\"" > ~/.minikube/profiles/minikube/config.json.tmp && mv ~/.minikube/profiles/minikube/config.json.tmp ~/.minikube/profiles/minikube/config.json 
+# ⚙️ Configure LoadBalancer IPs manually due to Minikube issue
+# This ensures persistence and avoids interactive configuration.
+cat ~/.minikube/profiles/minikube/config.json | jq ".KubernetesConfig.LoadBalancerStartIP=\"$FROM_IP\"" \
+| jq ".KubernetesConfig.LoadBalancerEndIP=\"$TO_IP\"" \
+> ~/.minikube/profiles/minikube/config.json.tmp && mv ~/.minikube/profiles/minikube/config.json.tmp ~/.minikube/profiles/minikube/config.json 
 
+# 🔌 Enable MetalLB and Ingress add-ons
 minikube addons enable metallb
 minikube addons enable ingress
+# Uncomment the line below to enable the metrics server if needed.
 # minikube addons enable metrics-server
 
-_files=$(find  $_directory  | grep 'values')
+# 📁 Locate all 'values' files in the script's directory
+_files=$(find "$_directory" -type f | grep 'values')
 
-# make sure Treafik loadbalancer IP is correct in all configs
-for file in $_files
-do
+# 🔄 Update LoadBalancer IPs in configuration files
+for file in $_files; do
     while read -r _line; do
-    if [ "$_line" != "" ]; then
-      # replace loadbalancer ip's with actual ip's from minikube (traefik should always use the first loadbalancer ip)
-      sed -E -i "s/([.]*:\s)'([a-z-]*){0,1}([0-9]{1,3}\.){3}[0-9]{1,3}.nip.io'/\1'\2${FROM_IP}.nip.io'/g" $file
-    fi
-  done <<< $(cat $file | grep 'loadbalancer-IP')  
+        if [ -n "$_line" ]; then  # Check if the line is not empty
+            # ✏️ Replace LoadBalancer IPs with actual IPs from Minikube
+            sed -E -i "s/([.]*:\s)'([a-z-]*){0,1}([0-9]{1,3}\.){3}[0-9]{1,3}.nip.io'/\1'\2${FROM_IP}.nip.io'/g" "$file"
+        fi
+    done <<< "$(grep 'loadbalancer-IP' "$file")"  # Read only lines containing 'loadbalancer-IP'
 done
 
-echo "Minikube Loadbalancer can be accessed with ${FROM_IP}.nip.io"
-
+# 🌍 Notify user of access to the Minikube LoadBalancer
+echo "✅ Minikube LoadBalancer can be accessed with ${FROM_IP}.nip.io"

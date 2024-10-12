@@ -1,260 +1,233 @@
-# Minikube
-- This project will create your local cluster dev environment with the most needed helm charts. Right now included:
-  - Gitlab
-  - MinIO
-  - MongoDB
 
+# 🛠️ Minikube
+This project will create your local cluster development environment with essential Helm charts. Currently included:
 
-
-
-## VPN
-- For some reason it does not work with double vpn from nordvpn
-
-
-
-
-
-
-
-
-<br><br>
-<br><br>
-_____________________________________
-_____________________________________
-<br><br>
-<br><br>
-
-# Links
-
-<br><br>
-<br><br>
-
-
-## MinIO
-- http://192.168.49.2.nip.io:30001/login
-- User:test69696969 | Password:test69696969
-
-
-
+- **GitLab**
+- **MinIO**
+- **MongoDB**
 
 
 
 <br><br>
 <br><br>
 
-## MongoDB
-
-<br><br>
-
-### Connection String
-- `mongodb://root:test@192.168.49.2.nip.io:30644/`
-
-
-
-
-
-
-<br><br>
-<br><br>
-
-## Gitlab
-
-<br><br>
-
-### UI
-- https://gitlab.local.com
-- root:69aZc996
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<br><br>
-<br><br>
-_____________________________
-_____________________________
-<br><br>
-<br><br>
-
-## UFW
-- If you want to deny incoming & outgoing traffic but still work with minikube then check:
-  - https://github.com/CyberT33N/ufw-cheat-sheet/blob/main/README.md#deny-forward-incoming--outgoing
-
-
-
-
-
-
-
-
-
-
-
-
-
-<br><br>
-<br><br>
-_____________________________
-_____________________________
-<br><br>
-<br><br>
-
-
-## Start
-- Will start the minikube and create namespace `dev`
-- `start.sh`
-
-
-
-
-
-
-
-
-<br><br>
-<br><br>
-_____________________________
-_____________________________
-<br><br>
-<br><br>
-
-
-## Install
-- Will install all deployments
-- `install.sh`
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<br><br>
-<br><br>
-_____________________________________
-_____________________________________
-<br><br>
-<br><br>
-
-## IP
-- Get your minikube IP
-```shell
-minikube ip
-```
-- Should be 192.168.49.2 or 192.168.49.2.nip.io
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<br><br>
-<br><br>
-_____________________________________
-_____________________________________
-<br><br>
-<br><br>
-
-
-# Services
-- Show all services in namespace dev
-```shell
-kubectl get svc --namespace=dev
-```
-
-
-
-
-
-
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-
-
-# Ingress
-
-## Show all ingress routes
-```shell
-kubectl get ingress -n dev
-```
-
-<br><br>
-<br><br>
-
-
-## Get details about ingress object
-```shell
-kubectl describe ingress gitlab-dev-webservice-default -n dev
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<br><br>
-<br><br>
-_____________________________________
-_____________________________________
-<br><br>
-<br><br>
-
-# Helm Charts
-
-<br><br>
-<br><br>
-
-## cert-manager
+## Dependencies
 
 <details>
 <summary>Click to expand..</summary>
 
-<br><br>
-<br><br>
+<br>
 
-### Install
+### 🐶 K9s
+<details>
+<summary>Click to expand..</summary>
+
+K9s is a terminal-based UI that allows you to interact with your Kubernetes clusters in a more efficient and user-friendly way. It simplifies the management of Kubernetes resources and provides an intuitive interface for developers and operators alike.
+
+
+
+## 📥 Install/Update
+
+1. **Download the latest version of K9s:**
+   Visit the [K9s Releases page](https://github.com/derailed/k9s/releases) and download the latest version for your operating system.
+
+2. **Verify your architecture:**
+   Use the following command to check your CPU architecture:
+   ```shell
+   lscpu
+   ```
+
+   - For `x86_64`, use the `amd64` version.
+
+3. **Install the corresponding version:**
+   For example, to install version 0.32.5 for Linux (amd64), use the following command:
+   ```shell
+   wget https://github.com/derailed/k9s/releases/download/v0.32.5/k9s_linux_amd64.deb
+   sudo dpkg -i k9s_linux_amd64.deb
+   ```
+
+<br>
+
+Once the installation is complete, you can start K9s by running the command `k9s` in your terminal.
+
+</details>
+</details>
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br><br><br>
+
+## 🔒 UFW
+- If you want to deny incoming & outgoing traffic while still working with Minikube, refer to:
+  - [UFW Cheat Sheet](https://github.com/CyberT33N/ufw-cheat-sheet/blob/main/README.md#deny-forward-incoming--outgoing)
+
+<br>
+
+### 🌐 VPN
+- For some reason, it does not work with a double VPN from NordVPN.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br><br><br>
+
+
+## ⚡ Start
+- This will start Minikube and create the namespace `dev`.
+```shell
+start.sh
+```
+
+<br>
+
+## 📦 Install
+- This will install all deployments.
+```shell
+install.sh
+```
+
+<br>
+
+## 🌍 Minikube IP
+- Get your Minikube IP:
+```shell
+minikube ip
+```
+- Should be `192.168.49.2` or `192.168.49.2.nip.io`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br><br><br>
+
+
+# 🔗 Deployment Links
+
+## 🌟 MinIO
+- [MinIO Login](http://192.168.49.2.nip.io:30001/login)
+- **User:** `test69696969` | **Password:** `test69696969`
+
+<br>
+
+## 🍃 MongoDB
+
+### 🔗 Connection String
+- `mongodb://root:test@192.168.49.2.nip.io:30644/`
+
+<br>
+
+## 🚀 GitLab
+
+### 🌍 UI
+- [GitLab UI](https://gitlab.local.com)
+- **Credentials:** `root:69aZc996`
+
+### SSH
+```shell
+ssh://git@gitlab.local.com:32022
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br><br><br>
+
+# 📜 Helm Charts
+
+
+
+
+
+
+<br>
+
+## 🛡️ cert-manager
+
+<details>
+<summary>Click to expand..</summary>
+
+- **This helm chart was not tested yet..**
+
+### 🛠️ Install
 ```shell
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
@@ -263,10 +236,7 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 helm install cert-manager jetstack/cert-manager --namespace cert-manager --version 1.15.1
 ```
 
-<br><br>
-<br><br>
-
-### Uninstall
+### ❌ Uninstall
 ```shell
 kubectl delete -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.1/cert-manager.crds.yaml
 kubectl delete namespace cert-manager
@@ -290,73 +260,31 @@ kubectl delete namespace cert-manager
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<br><br>
-<br><br>
-<br><br>
 <br><br>
 
-## MongoDB
+## 🍃 MongoDB
 
 <details>
 <summary>Click to expand..</summary>
 
-
-### Connection String
+### 🔗 Connection String
 - `mongodb://root:test@192.168.49.2.nip.io:30644/`
 
-<br><br>
-<br><br>
-
-### Add repo
+### 📥 Add Repo
 ```shell
-# Add bitnami repo
+# Add Bitnami repo
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
-# Update helm repo
+# Update Helm repo
 helm repo update
 
-# Auflisten der verfügbaren Helm Chart Versionen
+# List available Helm Chart versions
 helm search repo bitnami/mongodb --versions
 ```
 
-<br><br>
-<br><br>
-
-### Install Helm Chart
+### 📦 Install Helm Chart
 ```shell
-# This will download the mongodb helm chart to the folder ./mongodb/Chart
+# This will download the MongoDB Helm chart to the folder ./mongodb/Chart
 cd ~/Projects/minikube
 mkdir -p ./mongodb/Chart
 
@@ -371,16 +299,13 @@ touch ./mongodb/custom-values.yaml
 # /home/t33n/Projects/minikube/mongodb/setup.sh
 ```
 
-<br><br>
-<br><br>
-
-### Upgrade Helm Chart
+### 🔄 Upgrade Helm Chart
 ```shell
 kubectl config use-context minikube
 helm upgrade mongodb-dev ./mongodb/Chart --namespace dev -f ./mongodb/custom-values.yaml --atomic
 ```
 
-### Delete Deployment
+### ❌ Delete Deployment
 ```shell
 kubectl config use-context minikube
 helm --namespace dev delete mongodb-dev
@@ -454,110 +379,91 @@ helm --namespace dev delete mongodb-dev
 
 
 
-<br><br>
-<br><br>
-<br><br>
-<br><br>
 
 
-## MinIO
+
+
+
+<br><br>
+
+## 🗄️ MinIO
 
 <details>
 <summary>Click to expand..</summary>
 
-
-<br><br>
-<br><br>
-
-### Links
+### 🔗 Links
 
 #### UI
-- http://192.168.49.2.nip.io:30001/login
-- User:test69696969 | Password:test69696969
+- [MinIO UI](http://192.168.49.2.nip.io:30001/login)
+  - **User:** `test69696969` | **Password:** `test69696969`
 
 #### API
-- 192.168.49.2.nip.io:30000
-- AccessKey:test69696969 | SecretKey:test69696969
-
-<br><br>
-<br><br>
-
-
-### Uninstall
+- **Endpoint:** `http://192.168.49.2.nip.io:30000`
+  - **Access Key:** `test69696969` | **Secret Key:** `test69696969`
 
 <br><br>
 
-#### Full
+### ❌ Uninstall
+
+#### 🗑️ Full Uninstall
 ```shell
 # Delete the MinIO namespace and all resources within it
 kubectl delete namespace minio-dev
 ```
 
-<br><br>
-
-#### Single steps
+#### 🔍 Uninstall Steps
 ```shell
-# Lösche den Pod
+# Delete the Pod
 kubectl delete pod minio -n minio-dev
 
-# Lösche das Secret
+# Delete the Secret
 kubectl delete secret minio-secret -n minio-dev
 
-# Lösche den PersistentVolumeClaim
+# Delete the PersistentVolumeClaim
 kubectl delete pvc minio-pvc -n minio-dev
 
-# Lösche den PersistentVolume
+# Delete the PersistentVolume
 kubectl delete pv minio-pv
 
-# Lösche den Service
+# Delete the Service
 kubectl delete service minio-service -n minio-dev
 
-# Lösche den Namespace
+# Delete the Namespace
 kubectl delete namespace minio-dev
 ```
 
-
-<br><br>
 <br><br>
 
-### Install
+### ✅ Install
 ```shell
 bash ./minio/setup.sh
 ```
 
 <br><br>
-<br><br>
 
-### Re-install
+### 🔄 Re-install
 ```shell
 bash ./reinstall.sh --minio
 ```
 
 <br><br>
-<br><br>
 
-### Ugprade
+### 🔼 Upgrade
 ```shell
 bash ./minio/setup.sh
 ```
-- For most cases you can just re-run it and it will detect if there are any changes. But in other cases like e.g. where we want to change credentials you have to delete the pod. However, for local environemnts you can just run the reinstall script above. This will be the easieast way when yua re doing some changes
-
-
-
-
-<br><br>
-<br><br>
-
-### MinIO Client
+- In most cases, just re-running this will detect changes. For credential changes, you must delete the pod. In local environments, use the reinstall script for ease.
 
 <br><br>
 
-#### Install
-- https://min.io/docs/minio/linux/reference/minio-mc.html
-- Check architecture `uname -m`
-  - x86_64 means intel
+### 🛠️ MinIO Client
 
-### x86_64
+#### 📥 Install
+- [MinIO Client Documentation](https://min.io/docs/minio/linux/reference/minio-mc.html)
+- Check architecture with `uname -m`:
+  - `x86_64` indicates Intel.
+
+#### 📦 Installation for x86_64
 ```shell
 # ==== INSTALL =====
 curl https://dl.min.io/client/mc/release/linux-amd64/mc \
@@ -570,7 +476,7 @@ export PATH=$PATH:$HOME/minio-binaries/
 # mc --help
 
 # ==== SET ALIAS =====
-# When you use zsh then jsut run the mc command on zsh shell
+# If using zsh, run the mc command in the zsh shell
 bash +o history
 mc alias set minio http://192.168.49.2.nip.io:30000 test69696969 test69696969
 bash -o history
@@ -579,13 +485,11 @@ bash -o history
 mc admin info minio
 ```
 
-
-<br><br>
 <br><br>
 
-### MinIO for Gitlab
-- https://docs.gitlab.com/charts/advanced/external-object-storage/minio.html
-- You only have to create the buckets below when you fully will switch to external object storage. When you only want to use this instance for the gitlab runnter then it is no needed.
+### 📦 MinIO for GitLab
+- [GitLab Object Storage Documentation](https://docs.gitlab.com/charts/advanced/external-object-storage/minio.html)
+- Create the buckets below only when fully switching to external object storage. If this instance is for the GitLab runner only, it's not necessary.
 
 ```shell
 mc mb minio/gitlab-registry-storage
@@ -595,7 +499,6 @@ mc mb minio/gitlab-uploads-storage
 mc mb minio/gitlab-packages-storage
 mc mb minio/gitlab-backup-storage
 ```
-
 
 </details>
 
@@ -630,17 +533,31 @@ mc mb minio/gitlab-backup-storage
 
 
 
-<br><br>
-<br><br>
-<br><br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <br><br>
 
-## Gitlab
+## 🐙 GitLab
 <details>
 <summary>Click to expand..</summary>
 
-
-- The Gitlab helm Chart will if configured with the minikube example from official docs their own self-signed certificates and we do not have to have to worry about and this is what we will do. If needed you can create own certs and include them but it is not recommended because it will be a lot of work. You basicly only have to include the genereated secret to the gitlab-runner with:
+- The GitLab Helm chart, when configured with the Minikube example from the official documentation, will create its own self-signed certificates. Therefore, there's no need to worry about certificate management, although you can create your own certificates if necessary. However, this is not recommended due to the additional workload involved. You essentially only need to include the generated secret in the GitLab Runner configuration:
 ```yaml
 gitlab-runner:
   install: true
@@ -648,31 +565,41 @@ gitlab-runner:
 ```
 
 <br><br>
-<br><br>
 
-### Guides
-- https://docs.gitlab.com/charts/development/minikube/
 
-<br><br>
-
-### Links
-- https://gitlab.local.com/users/sign_in
-
-<br><br>
-
-#### UI
-- https://gitlab.local.com
-- root:69aZc996
-
+### 📚 Guides
+- [Minikube Development](https://docs.gitlab.com/charts/development/minikube/)
 
 
 
 
 <br><br>
+
+### 🔗 Links
+- [GitLab Sign In](https://gitlab.local.com/users/sign_in)
+
+<br>
+
+#### 🌐 UI
+- [GitLab Dashboard](https://gitlab.local.com)
+- **Credentials:** root:69aZc996
+
+<br>
+
+#### 🔑 Git SSH
+```shell
+ssh://git@gitlab.local.com:32022
+```
+
+
+
+
+
+<br><br>
 <br><br>
 
-### Hosts
-- Add this to your `/etc/hosts` file. In your custom-values.yaml you can also add global.hosts.domain=192.168.49.2.nip.io
+### 🏠 Hosts
+- Add the following entries to your `/etc/hosts` file. In your `custom-values.yaml`, you can also add `global.hosts.domain=192.168.49.2.nip.io`.
 ```shell
 sudo gedit /etc/hosts
 
@@ -684,36 +611,35 @@ sudo gedit /etc/hosts
 <br><br>
 <br><br>
 
+### 🌩️ MinIO
+- I was unable to get the included MinIO release running due to the self-signed TLS certificate issue.
+    - [Related Issue](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/issues/75#note_211405230)
 
-### Minio
-- I did not find a way to get the included minio release running because of the tls self signed cert problem
-    - https://gitlab.com/gitlab-org/charts/gitlab-runner/-/issues/75#note_211405230
-
-- But we can deploy our own minio instance and then use it inside of our gitlab-runner. Please check the MinIO Install section above or run `./minio/setup.sh`
-  - The setup will also create the needed bucket `runner-cache` for the gitlab-runner
-  - It will also create the needed secret `minio-dev` inside of our `dev` namespace
-  ```yaml
-  gitlab-runner:
-    runners:
-      cache:
-      ## S3 the name of the secret.
-        secretName: minio-dev
-  ```
-
-- In order to use our own minio instance with the gitlab runner we have to make sure to set the correct config:
+- Instead, we can deploy our own MinIO instance and use it within our GitLab Runner. Please refer to the MinIO installation section above or run `./minio/setup.sh`.
+  - The setup will also create the necessary `runner-cache` bucket for the GitLab Runner.
+  - Additionally, it will generate the required secret `minio-dev` within our `dev` namespace.
 ```yaml
-# Provide gitlab-runner with secret object containing self-signed certificate chain
+gitlab-runner:
+  runners:
+    cache:
+    ## S3 secret name.
+      secretName: minio-dev
+```
+
+- To utilize our own MinIO instance with the GitLab Runner, ensure that the correct configuration is set:
+```yaml
+# Provide GitLab Runner with the secret object containing the self-signed certificate chain
 gitlab-runner:
   install: true
   certsSecretName: gitlab-dev-wildcard-tls-chain
 
   runners:
     cache:
-    ## S3 the name of the secret.
+    ## S3 secret name.
       secretName: minio-dev
     ## Use this line for access using gcs-access-id and gcs-private-key
     # secretName: gcsaccess
-    ## Use this line for access using google-application-credentials file
+    ## Use this line for access using a google-application-credentials file
     # secretName: google-application-credentials
     ## Use this line for access using Azure with azure-account-name and azure-account-key
     # secretName: azureaccess
@@ -736,32 +662,27 @@ gitlab-runner:
             Insecure = true
         {{ end }}
 ```
-- **AccessKey & SecretKey must be set or you get error that the url is not found. The values must be valid**
-- In our case the minio instance is not https so set `Insecure = true`
-- As mentioned before the bucket must already exists `mc mb minio/runner-cache`
+- **Note:** Both the AccessKey and SecretKey must be set; otherwise, you will encounter an error indicating that the URL cannot be found. The values must be valid.
+- In our scenario, the MinIO instance is not using HTTPS, so `Insecure` must be set to `true`.
+- As mentioned earlier, the bucket must already exist. You can create it using `mc mb minio/runner-cache`.
 
+<br><br><br><br>
 
-
-
-<br><br>
-<br><br>
-
-### Certs
-- This section is not needed for the gitlab helm chart for minikube because of automated creation for self-signed certs. However, it is maybe usefully for somebody
+### 🔒 Certificates
+- This section is not required for the GitLab Helm chart in Minikube due to the automated creation of self-signed certificates. However, it may be useful for others.
 
 <br><br>
 
-#### Create self signed cert
+#### ✍️ Create Self-Signed Certificate
 ```shell
 openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout gitlab.local.com.key -out gitlab.local.com.crt -subj "/C=DE/ST=Some-State/L=City/O=Organization/OU=Department/CN=local.com"
 ```
 
 <br><br>
 
-### Download cert and create secret
-
+### 📥 Download Certificate and Create Secret
 ```shell
-# Create cert
+# Create certificate
 openssl s_client -showcerts -connect gitlab.local.com:443 -servername gitlab.local.com < /dev/null 2>/dev/null | openssl x509 -outform PEM > ./gitlab/gitlab.local.com.crt
 
 if kubectl get secret -n dev gitlab-cert-self >/dev/null 2>&1; then
@@ -775,62 +696,57 @@ kubectl create secret generic gitlab-cert-self \
 
 
 
+
+
 <br><br>
 <br><br>
 
-### Git
-- We use NodePort for gitlab-shell in order to be able to push into our repos. Git is available over port 32022. Check this guide for how to to create and to add SSH Key (https://github.com/CyberT33N/git-cheat-sheet/blob/main/README.md#ssh)
-  - Then after this you run `ssh-add ~/.ssh/github/id_ecdsa` and then after this:
+### 🦊 Git (SSH)
+- We utilize NodePort for GitLab shell access, allowing us to push to our repositories. Git is available over port 32022. Refer to this guide for instructions on creating and adding SSH keys: [Git Cheat Sheet](https://github.com/CyberT33N/git-cheat-sheet/blob/main/README.md#ssh).
+  - After setting up your SSH keys, run:
 ```shell
 git remote add gitlabInternal ssh://git@gitlab.local.com:32022/websites/test.git
-
 ```
 
-
-
-
-
 <br><br>
 <br><br>
 
-
-### Add repo
+### ➕ Add Repository
 ```shell
-# Add gitlab repo
+# Add GitLab repository
 helm repo add gitlab https://charts.gitlab.io/
 
-# Update helm repo
+# Update Helm repository
 helm repo update
 
-# Auflisten der verfügbaren Helm Chart Versionen
+# List available Helm chart versions
 helm search repo gitlab --versions
 ```
 
 <br><br>
 <br><br>
 
-### Install Helm Chart
+### ⚙️ Install Helm Chart
 ```shell
-# This will download the gitlab helm chart to the folder ./gitlab/Chart
+# This command downloads the GitLab Helm chart to the folder ./gitlab/Chart
 cd ~/Projects/minikube
 mkdir -p ./gitlab/Chart
 
-helm pull gitlab/gitlab --version 8.1.2  --untar --untardir ./tmp
+helm pull gitlab/gitlab --version 8.1.2 --untar --untardir ./tmp
 cp -r ./tmp/gitlab/* ./gitlab/Chart
 rm -rf ./tmp
 
 # Create custom-values.yaml
 touch ./gitlab/custom-values.yaml
-
 ```
-     - If you get error `download failed after attempts=6: net/http: TLS handshake timeout` in your gitlab-runner deployment try:
-     ```shell
-     unset all_proxy
-     ```
+- If you encounter the error `download failed after attempts=6: net/http: TLS handshake timeout` during the GitLab Runner deployment, try:
+```shell
+unset all_proxy
+```
 
 <br><br>
 
-### Upgrade Helm Chart
+### 🔄 Upgrade Helm Chart
 ```shell
 kubectl config use-context minikube
 helm upgrade gitlab-dev ./gitlab/Chart --namespace dev -f ./gitlab/custom-values.yaml --atomic
@@ -838,7 +754,7 @@ helm upgrade gitlab-dev ./gitlab/Chart --namespace dev -f ./gitlab/custom-values
 
 <br><br>
 
-### Delete release
+### ❌ Delete Release
 ```shell
 kubectl config use-context minikube
 helm --namespace dev delete gitlab-dev
@@ -846,28 +762,28 @@ helm --namespace dev delete gitlab-dev
 
 <br><br>
 
-### Retrieve IP addresses
+### 📍 Retrieve IP Addresses
 ```shell
 kubectl get ingress -lrelease=gitlab-dev -n dev
 ```
 
 <br><br>
 
-### Change password
+### 🔑 Change Password
 
 <br><br>
 
-#### Method #1 - UI
-- You can access the GitLab instance by visiting the domain specified, https://gitlab.192.168.99.100.nip.io is used in these examples. If you manually created the secret for initial root password, you can use that to sign in as root user. If not, GitLab automatically created a random password for the root user. This can be extracted by the following command (replace <name> by name of the release - which is gitlab if you used the command above). 
+#### 💻 Method #1 - UI
+- You can access the GitLab instance by visiting the specified domain. In this example, `https://gitlab.192.168.99.100.nip.io` is used. If you manually created the secret for the initial root password, you can use that to sign in as the root user. If not, GitLab automatically generates a random password for the root user, which can be extracted using the following command (replace `<name>` with the name of the release, which is `gitlab` if you used the command above):
 ```shell
 kubectl get -n dev secret gitlab-dev-gitlab-initial-root-password -ojsonpath='{.data.password}' | base64 --decode ; echo
 ```
-- You can change the password by sign in > right click on your avater > edit > password
+- You can change the password by signing in, right-clicking on your avatar, and selecting edit > password.
 
 <br><br>
 
-#### Method #2 - gitlab-rails
-- Use gitlab-rails. The pod gitlab-dev-toolbox is able to dit
+#### 🛠️ Method #2 - GitLab Rails
+- Use GitLab Rails to change the password. The pod `gitlab-dev-toolbox` can perform this operation:
 ```shell
 kubectl create secret generic gitlab-cert-self \
 --namespace dev \
@@ -876,38 +792,71 @@ kubectl create secret generic gitlab-cert-self \
 NAMESPACE="dev"
 POD_NAME=$(kubectl get pods -n dev | grep gitlab-dev-toolbox | awk '{print $1}')
 
-# Prüfen, ob der Pod-Name gefunden wurde
+# Check if the pod name was found
 if [ -z "$POD_NAME" ]; then
-  echo "Kein Pod mit dem Namen 'gitlab-dev-toolbox' gefunden."
+  echo "No pod found with the name 'gitlab-dev-toolbox'."
   exit 1
 fi
 
-# Befehl im Pod ausführen
-kubectl exec -it $POD_NAME -n $NAMESPACE -- bash -c "gitlab-rails runner \"user = User.find_by(username: 'root'); user.password = 'passwordHere'; user.password_confirmation = 'passwordHere'; user.save!\""
+# Execute the command in the pod
+kubectl exec -it $POD_NAME -n $NAMESPACE -- bash -c "gitlab-rails runner \"user = User.find_by(username: 'root'); user.password = 'passwordHere'; user.password_confirmation = '
+
+passwordHere'; user.save!\""
 ```
+
 
 <br><br>
 
-#### Method 3 - Helm chart (Not tested)
-You create a secret and set it to your custom-values.yaml like we did in this guide
+#### ⚙️ Method 3 - Helm Chart (Not Tested)
+You can create a secret and set it in your `custom-values.yaml` as demonstrated in this guide:
 ```shell
 kubectl create secret -n dev generic gitlab-root-password-custom --from-literal='password=test'
-
 ```
 ```yaml
 # initialRootPassword:
 #   secret: gitlab-root-password-custom
 #   key: password
-
 ```
 
-<br><br>
 
-### Check ingress object
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br><br><br>
+
+## 🔧Useful kubectl commands
+
+<br>
+
+### Ingress
+
+### Check Ingress Object
+To inspect the ingress object for your GitLab deployment, use the following command:
 ```shell
 kubectl describe ingress gitlab-dev-webservice-default -n dev
 ```
 
 <br><br>
+
 
 </details>
