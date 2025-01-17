@@ -4,7 +4,10 @@ This project will create your local cluster development environment with essenti
 
 - **GitLab**
 - **MinIO**
-- **MongoDB**
+
+- Databases:
+   - **MongoDB**
+   - **PostgreSQL**
 
 
 
@@ -159,14 +162,41 @@ minikube ip
 - [MinIO Login](http://192.168.49.2.nip.io:30001/login)
 - **User:** `test69696969` | **Password:** `test69696969`
 
+
+
+
+<br><br>
+
+
+## Databases
+
 <br>
 
-## 🍃 MongoDB
+### 🍃 MongoDB
 
-### 🔗 Connection String
+<br>
+
+#### 🔗 Connection String
 - `mongodb://root:test@192.168.49.2.nip.io:30644/`
 
 <br>
+
+### 🍃 PostgreSQL
+
+<br>
+
+#### 🔗 Connection String
+- `postgresql://test:test@192.168.49.2.nip.io:30543/test`
+
+
+
+
+
+
+
+
+<br><br>
+
 
 ## 🚀 GitLab
 
@@ -260,6 +290,92 @@ kubectl delete namespace cert-manager
 
 
 
+
+
+
+
+
+
+
+## 🍃 PostgreSQL
+
+<details>
+<summary>Click to expand..</summary>
+
+### 🔗 Connection String
+- `postgresql://test:test@192.168.49.2.nip.io:30543/test`
+
+### 📥 Add Repo
+```shell
+# Add Bitnami repo
+helm repo add bitnami https://charts.bitnami.com/bitnami
+
+# Update Helm repo
+helm repo update
+
+# List available Helm Chart versions
+helm search repo bitnami/postgresql --versions
+```
+
+### 📦 Install Helm Chart
+```shell
+# This will download the PostgreSQL Helm chart to the folder ./postgresql/Chart
+cd ~/Projects/minikube
+mkdir -p ./postgresql/Chart
+
+# 17.2.0
+helm pull bitnami/postgresql --version 16.4.3 --untar --untardir ./tmp
+cp -r ./tmp/postgresql/* ./postgresql/Chart
+rm -rf ./tmp
+
+# Create custom-values.yaml
+touch ./postgresql/custom-values.yaml
+
+# /home/t33n/Projects/minikube/postgresql/setup.sh
+```
+
+### 🔄 Upgrade Helm Chart
+```shell
+kubectl config use-context minikube
+helm upgrade postgresql-dev ./postgresql/Chart --namespace dev -f ./postgresql/custom-values.yaml --atomic
+```
+
+### ❌ Delete Deployment
+```shell
+kubectl config use-context minikube
+helm --namespace dev delete postgresql-dev
+```
+
+</details>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
 <br><br>
 
 ## 🍃 MongoDB

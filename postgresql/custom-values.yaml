@@ -1,0 +1,25 @@
+auth:
+  enablePostgresUser: true
+  # Superuser password
+  postgresPassword: "test"
+  username: "test"
+  password: "test"
+  database: "test"
+
+primary:
+  service:
+    type: NodePort
+    nodePorts:
+      postgresql: 30543
+
+  persistence:
+    enabled: true
+    size: 8Gi
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
