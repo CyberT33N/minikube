@@ -12,12 +12,16 @@ set -e
 _directory=$(dirname "$0")
 
 # 🚀 Start Minikube with specified resources and enable storage provisioner
+# Allocate 8 CPUs
+# Allocate 18 GB of memory
+# Use Docker as the driver
+# Enable storage provisioner add-on
 minikube start \
-   --cpus=8 \                     # Allocate 8 CPUs
-   --memory=18G \                 # Allocate 18 GB of memory
-   --driver=docker \              # Use Docker as the driver
-   --addons storage-provisioner    # Enable storage provisioner add-on
-
+  --cpus=8 \
+  --memory=18g \
+  --driver=docker \
+  --addons=storage-provisioner
+  
 echo "✅ Minikube started successfully!"
 
 # 🌐 Get the Minikube IP address
