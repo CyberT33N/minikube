@@ -13,12 +13,11 @@ _directory=$(dirname "$0")
 
 # 🚀 Start Minikube with specified resources and enable storage provisioner
 # Allocate 8 CPUs
-# Allocate 18 GB of memory
+# Allocate 18 GB of memory   --memory=18g \
 # Use Docker as the driver
 # Enable storage provisioner add-on
 minikube start \
   --cpus=8 \
-  --memory=18g \
   --driver=docker \
   --addons=storage-provisioner
   
