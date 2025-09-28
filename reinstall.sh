@@ -21,7 +21,7 @@
 if [ "$1" = "--full" ]; then
     echo "🗑️ Deleting Minikube and reinstalling everything.."
 
-    minikube delete  # Delete the Minikube cluster
+    minikube delete --all --purge  # Delete the Minikube cluster
 
     # Restart the installation process
     bash ./start.sh

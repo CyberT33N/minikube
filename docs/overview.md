@@ -8,7 +8,5 @@ This project will create your local cluster development environment with essenti
    - **MongoDB**
    - **PostgreSQL**
 
-
-
 <br><br>
 <br><br>

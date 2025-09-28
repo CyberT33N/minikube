@@ -11,15 +11,42 @@ set -e
 # 📂 Set the script's directory
 _directory=$(dirname "$0")
 
+# 🎮 Detect NVIDIA GPU support for Docker and set GPU flags if available
+GPU_FLAGS=""
+if command -v nvidia-smi >/dev/null 2>&1; then
+  if docker info --format '{{json .Runtimes}}' 2>/dev/null | grep -q '"nvidia"'; then
+    echo "🧪 Testing NVIDIA container runtime (ubuntu image)..."
+    if sudo -n docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi >/dev/null 2>&1; then
+      GPU_FLAGS="--gpus all"
+      echo "🎮 NVIDIA GPU runtime works (sudo). Enabling GPU passthrough for Minikube."
+    elif docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi >/dev/null 2>&1; then
+      GPU_FLAGS="--gpus all"
+      echo "🎮 NVIDIA GPU runtime works (no sudo). Enabling GPU passthrough for Minikube."
+    else
+      echo "🧪 Ubuntu check failed. Trying CUDA base image..."
+      if sudo -n docker run --rm --gpus all nvidia/cuda:12.2.0-base-ubuntu22.04 nvidia-smi >/dev/null 2>&1; then
+        GPU_FLAGS="--gpus all"
+        echo "🎮 NVIDIA CUDA base image test succeeded (sudo). Enabling GPU passthrough."
+      elif docker run --rm --gpus all nvidia/cuda:12.2.0-base-ubuntu22.04 nvidia-smi >/dev/null 2>&1; then
+        GPU_FLAGS="--gpus all"
+        echo "🎮 NVIDIA CUDA base image test succeeded (no sudo). Enabling GPU passthrough."
+      else
+        echo "⚠️ NVIDIA runtime is present, but container GPU test failed. Continuing without GPU."
+      fi
+    fi
+  else
+    echo "⚠️ NVIDIA drivers detected, but Docker lacks GPU runtime. Install nvidia-container-toolkit or continue without GPU."
+  fi
+else
+  echo "ℹ️ No NVIDIA GPU support detected. Starting Minikube without GPU."
+fi
+
 # 🚀 Start Minikube with specified resources and enable storage provisioner
-# Allocate 8 CPUs
-# Allocate 18 GB of memory   --memory=18g \
-# Use Docker as the driver
-# Enable storage provisioner add-on
-minikube start \
-  --cpus=8 \
-  --driver=docker \
-  --addons=storage-provisioner
+MINIKUBE_ARGS="--cpus no-limit --memory no-limit --container-runtime docker --driver docker --addons storage-provisioner"
+if [ -n "$GPU_FLAGS" ]; then
+  MINIKUBE_ARGS="$MINIKUBE_ARGS $GPU_FLAGS"
+fi
+minikube start $MINIKUBE_ARGS
   
 echo "✅ Minikube started successfully!"
 
