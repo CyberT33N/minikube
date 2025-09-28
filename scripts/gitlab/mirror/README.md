@@ -12,7 +12,7 @@ export VISIBILITY=private                    # optional: private|internal|public
 export DRY_RUN=true                          # zuerst testen
 export CONCURRENCY=4                         # optional
 
-node --experimental-strip-types /home/t33n/Projects/environments/minikube/scripts/gitlab/mirror/github-to-gitlab.ts
+npx -y tsx /home/t33n/Projects/environments/minikube/scripts/gitlab/mirror/github-to-gitlab.ts
 ```
 
 ## Umgebungsvariablen
