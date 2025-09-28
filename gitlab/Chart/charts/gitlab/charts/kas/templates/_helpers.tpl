@@ -17,16 +17,19 @@ if there is a shared tls secret for all ingresses.
 Build Redis config for KAS
 */}}
 {{- define "kas.redis" -}}
-{{- if .Values.redis.enabled -}}
 {{- if .Values.global.redis.kas -}}
 {{-   $_ := set $ "redisConfigName" "kas" -}}
 {{- else if .Values.global.redis.sharedState -}}
 {{-   $_ := set $ "redisConfigName" "sharedState" -}}
 {{- end -}}
 {{- include "gitlab.redis.selectedMergedConfig" . -}}
-{{- if .redisMergedConfig.password.enabled -}}
-password_file: /etc/kas/redis/{{ printf "%s-password" (default "redis" .redisConfigName) }}
+{{- if .redisMergedConfig.user }}
+username: {{ .redisMergedConfig.user }}
 {{- end -}}
+{{- if .redisMergedConfig.password.enabled }}
+password_file: /etc/kas/redis/{{ printf "%s-password" (default "redis" .redisConfigName) }}
+{{- end }}
+database_index: {{ .redisMergedConfig.database }}
 {{- if not .redisMergedConfig.sentinels }}
 server:
   address: {{ template "gitlab.redis.host" . }}:{{ template "gitlab.redis.port" . }}
@@ -46,4 +49,24 @@ tls:
   enabled: true
 {{- end -}}
 {{- end -}}
+
+{{/*
+Labels to select Pods created by the KAS Deployment. Used for Service, PodMonitor, ServiceMonitor, etc.
+*/}}
+{{- define "kas.podSelectorLabels" -}}
+app: {{ template "name" . }}
+release: {{ .Release.Name }}
+{{- end -}}
+
+
+{{/*
+Returns the secret name for the Secret containing the TLS certificate and key for Workspaces.
+Uses `ingress.tls.workspacesSecretName` first and falls back to `global.ingress.tls.workspacesSecretName`.
+*/}}
+{{- define "workspaces.tlsSecret" -}}
+{{- $defaultName := (dict "workspacesSecretName" "") -}}
+{{- if .Values.global.ingress.configureCertmanager -}}
+{{- $_ := set $defaultName "workspacesSecretName" (printf "%s-kas-workspaces-tls" .Release.Name) -}}
+{{- end -}}
+{{- pluck "workspacesSecretName" .Values.ingress.tls .Values.global.ingress.tls $defaultName | first -}}
 {{- end -}}

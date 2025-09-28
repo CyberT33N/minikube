@@ -25,11 +25,17 @@ image:
   # tag: master
 service:
   tls: {}
+  type: ClusterIP
+  clusterIP: None
 annotations: {}
 common:
   labels: {}
 podLabels: {}
 serviceLabels: {}
+
+# Allows process namespace sharing within the pod
+# This makes processes in a container visible to all other containers in the same pod.
+shareProcessNamespace: false
 
 init:
   image: {}
@@ -38,7 +44,33 @@ init:
   resources:
     requests:
       cpu: 50m
-  containerSecurityContext: {}
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    capabilities:
+      drop: [ "ALL" ]
+
+# Gitaly built-in cgroups, spawns Git processes into a cgroup per repository, protecting the service/pod from OOM events
+# ref: https://docs.gitlab.com/administration/gitaly/cgroups/
+cgroups:
+  enabled: false
+  initContainer:
+    image:
+      repository: registry.gitlab.com/gitlab-org/build/cng/gitaly-init-cgroups
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+  mountpoint: '{% file.Read "/etc/gitlab-secrets/gitaly-pod-cgroup" | strings.TrimSpace %}'
+  hierarchyRoot: gitaly
+  # memoryBytes:
+  # cpuShares:
+  # cpuQuotaUs:
+  repositories: {}
+    # count:
+    # memoryBytes:
+    # cpuShares:
+    # cpuQuotaUs:
+    # maxCgroupsPerRepo:
 
 ## Support for tolerations for pod scheduling
 tolerations: []
@@ -46,17 +78,23 @@ tolerations: []
 ## The Gitaly StatefulSet's priorityClassName
 # priorityClassName:
 
+# Gitaly shutdown grace period, how long to wait for in-flight requests to complete (seconds)
+# Pod `terminationGracePeriodSeconds` is set to this value + 5 seconds
+gracefulRestartTimeout: 25
+
 logging:
   format: "json"
   # level:
   # sentryDsn:
   # sentryEnvironment:
+
 git: {}
   # catFileCacheSize:
   ## Amend the default configuration Gitaly is using when spawning Git
   ## commands. Accepts configuration as documented in git-config(1).
   # config:
   #   - {key: "pack.threads", value: 4}
+
 prometheus: {}
   # grpcLatencyBuckets: "[1.0, 1.5, 2.0, 2.5]"
 
@@ -143,43 +181,59 @@ securityContext:
 ## Allow to overwrite the specific security context under which the gitaly container is running.
 containerSecurityContext:
   runAsUser: 1000
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  capabilities:
+    drop: ["ALL"]
 
 ## Enable deployment to use a serviceAccount
 serviceAccount:
   enabled: false
   create: false
   annotations: {}
+  ## Used for local override of global ServiceAccount token mounting
+  # automountServiceAccountToken: false
   ## Name to be used for serviceAccount, otherwise defaults to chart fullname
   # name:
 
 statefulset:
   strategy: {}
   livenessProbe:
-    initialDelaySeconds: 30
+    initialDelaySeconds: 0
     periodSeconds: 10
     timeoutSeconds: 3
     successThreshold: 1
     failureThreshold: 3
   readinessProbe:
-    initialDelaySeconds: 10
-    periodSeconds: 10
+    initialDelaySeconds: 0
+    periodSeconds: 5
     timeoutSeconds: 3
     successThreshold: 1
     failureThreshold: 3
+  startupProbe:
+    enabled: true
+    initialDelaySeconds: 1
+    periodSeconds: 1
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 60
 
 affinity:
   podAntiAffinity:
     topologyKey:
+  nodeAffinity:
+       key:
+       values:
 
 ## Enable the Gitaly pack-objects cache
-## ref: https://docs.gitlab.com/ee/administration/gitaly/configure_gitaly.html#pack-objects-cache
+## ref: https://docs.gitlab.com/administration/gitaly/configure_gitaly/#pack-objects-cache
 packObjectsCache: {}
 #  enabled: false
 #  dir: "/home/git/repositories/+gitaly/PackObjectsCache"
 #  max_age: 5m
 
 ## Enable Gitaly to GPG sign all commits created by GitLab
-## ref: https://docs.gitlab.com/ee/administration/gitaly/configure_gitaly.html#configure-commit-signing-for-gitlab-ui-commits
+## ref: https://docs.gitlab.com/administration/gitaly/configure_gitaly/#configure-commit-signing-for-gitlab-ui-commits
 gpgSigning: {}
   # enabled: false
   # secret: glGPG
@@ -191,3 +245,17 @@ backup: {}
 # default enable gomemlimit to avoid gc related OOM errors
 gomemlimit:
   enabled: true
+
+timeout: {}
+  # uploadPackNegotiation: "10m"
+  # uploadArchiveNegotiation: "1m"
+
+dailyMaintenance: {}
+  # disabled: true
+  # startHour:
+  # startMinute:
+  # duration:
+  # storages:
+
+bundleUri: {}
+  # goCloudUrl:

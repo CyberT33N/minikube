@@ -45,6 +45,8 @@ image:
   repository: registry.gitlab.com/gitlab-com/gl-security/engineering-and-research/automation-team/spam/spamcheck
   # tag:
 
+listenAddr: "[::]"
+
 service:
   type: ClusterIP
   externalPort: 8001
@@ -93,6 +95,8 @@ resources:
 serviceAccount:
   enabled: false
   create: false
+  ## Used for local override of global ServiceAccount token mounting
+  # automountServiceAccountToken: false
 
 # Tolerations for pod scheduling
 tolerations: []
@@ -106,3 +110,16 @@ securityContext:
 affinity:
   podAntiAffinity:
     topologyKey:
+  nodeAffinity:
+       key:
+       values:
+
+## Topology spread constraints rely on node labels to identify the topology domain(s) that each Node is in.
+## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+topologySpreadConstraints: []
+ # - labelSelector:
+ #     matchLabels:
+ #       app: name
+ #     maxSkew: 1
+ #     topologyKey: topology.kubernetes.io/zone
+ #     whenUnsatisfiable: DoNotSchedule

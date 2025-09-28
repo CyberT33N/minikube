@@ -35,8 +35,8 @@ if [ -d "${secrets_dir}" ]; then
     fi
   fi
 fi
-MIN_VERSION=16.11
-CHART_MIN_VERSION=7.11
+MIN_VERSION=18.2
+CHART_MIN_VERSION=9.2
 
 # Remove 'v' prefix from GitLab version if present (set in Chart.yaml appVersions)
 GITLAB_VERSION=${GITLAB_VERSION#v}
@@ -54,7 +54,7 @@ NEW_CHART_MINOR_VERSION=$(echo $CHART_VERSION | awk -F "." '{print $1"."$2}')
 
 if [ ! -f /chart-info/gitlabVersion ]; then
   notify "It seems you are attempting an unsupported upgrade path."
-  notify "Please follow the upgrade documentation at https://docs.gitlab.com/ee/update/#upgrade-paths"
+  notify "Please follow the upgrade documentation at https://docs.gitlab.com/update/#upgrade-paths"
   exit 1
 fi
 

@@ -8,9 +8,9 @@ database:
   enabled: {{ .Values.database.enabled }}
   host: {{ default (include "gitlab.psql.host" .) .Values.database.host | quote }}
   port: {{ default (include "gitlab.psql.port" .) .Values.database.port }}
-  user: {{ .Values.database.user }}
+  user: {{ include "registry.database.username" . }}
   password: "DB_PASSWORD_FILE"
-  dbname: {{ .Values.database.name }}
+  dbname: {{ include "registry.database.name" . }}
   sslmode: {{ .Values.database.sslmode }}
   {{- if .Values.database.ssl }}
   sslcert: /etc/docker/registry/ssl/client-certificate.pem
@@ -44,17 +44,64 @@ database:
     maxidletime: {{ .Values.database.pool.maxidletime }}
     {{- end }}
   {{- end }}
+  {{- if .Values.database.backgroundMigrations.enabled }}
+  backgroundmigrations:
+    enabled: {{ .Values.database.backgroundMigrations.enabled }}
+    {{- if .Values.database.backgroundMigrations.jobInterval }}
+    jobinterval: {{ .Values.database.backgroundMigrations.jobInterval | quote }}
+    {{- end }}
+    {{- if .Values.database.backgroundMigrations.maxJobRetries }}
+    maxjobretries: {{ .Values.database.backgroundMigrations.maxJobRetries }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.database.loadBalancing.enabled }}
+  loadbalancing:
+    enabled: {{ .Values.database.loadBalancing.enabled }}
+    {{- if .Values.database.loadBalancing.nameserver }}
+    {{-   if .Values.database.loadBalancing.nameserver.host }}
+    nameserver: {{ .Values.database.loadBalancing.nameserver.host | quote }}
+    {{-   end }}
+    {{-   if .Values.database.loadBalancing.nameserver.port }}
+    port: {{ .Values.database.loadBalancing.nameserver.port | int }}
+    {{-   end }}
+    {{- end }}
+    record: {{ .Values.database.loadBalancing.record | required "`database.loadBalancing` requires `record` to be provided." | quote }}
+    {{- if .Values.database.loadBalancing.replicaCheckInterval }}
+    replicacheckinterval: {{ .Values.database.loadBalancing.replicaCheckInterval | quote }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.database.metrics.enabled }}
+  metrics:
+    enabled: {{ .Values.database.metrics.enabled }}
+    {{- if .Values.database.metrics.interval }}
+    interval: {{ .Values.database.metrics.interval | quote }}
+    {{- end }}
+    {{- if .Values.database.metrics.leaseDuration }}
+    leaseduration: {{ .Values.database.metrics.leaseDuration | quote }}
+    {{- end }}
+  {{- end }}
 {{- end }}
 {{- end -}}
+
+{{- define "gitlab.registry.database.password.secret" }}
+{{- $database := default (dict) .Values.database -}}
+{{- dig "password" "secret" "" $database | default (printf "%s-registry-database-password" .Release.Name) -}}
+{{- end -}}
+
+{{- define "gitlab.registry.database.password.key" }}
+{{- $database := default (dict) .Values.database -}}
+{{- dig "password" "key" "password" $database -}}
+{{- end -}}
+
 
 {{/*
 Return Registry's database secret entry as a projected volume
 */}}
 {{- define "gitlab.registry.database.password.projectedVolume" -}}
 - secret:
-    name: {{ default (printf "%s-registry-database-password" .Release.Name) .Values.database.password.secret }}
+    name: {{ include "gitlab.registry.database.password.secret" . }}
     items:
-      - key: {{ default "password" .Values.database.password.key }}
+      - key: {{ include "gitlab.registry.database.password.key" . }}
         path: database_password
 {{- end -}}
 

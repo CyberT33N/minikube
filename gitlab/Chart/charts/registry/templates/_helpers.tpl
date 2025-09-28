@@ -209,12 +209,22 @@ affinity:
     nodeAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
         - weight: 1
-          nodeSelectorTerms:
-            - matchExpressions:
-                - key: {{ default .Values.global.affinity.nodeAffinity.key .Values.affinity.nodeAffinity.key | quote }}
-                  operator: In
-                  values: {{ default .Values.global.affinity.nodeAffinity.values .Values.affinity.nodeAffinity.values | toYaml | nindent 18 }}
+          preference:
+            matchExpressions:
+              - key: {{ default .Values.global.affinity.nodeAffinity.key .Values.affinity.nodeAffinity.key | quote }}
+                operator: In
+                values: {{ default .Values.global.affinity.nodeAffinity.values .Values.affinity.nodeAffinity.values | toYaml | nindent 16 }}
   {{- end -}}
 {{- end -}}
 {{- end }}
 
+{{/*
+Render the standard labels for resources related to the registry migration.
+These differ from the standard labels so the migration related Pod's are not
+matched by the registry PDB and Deployment selectors.
+*/}}
+{{- define "registry.migration.standardLabels" -}}
+{{- $labels := (include "gitlab.standardLabels" .) | fromYaml }}
+{{- $_ := set $labels "app" "registry-migrations" }}
+{{- toYaml $labels }}
+{{- end -}}

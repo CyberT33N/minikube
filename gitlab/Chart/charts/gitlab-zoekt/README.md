@@ -2,20 +2,75 @@
 
 For deploying Zoekt as a code search engine to support [GitLab exact code search](https://docs.gitlab.com/ee/user/search/exact_code_search.html).
 
-## Install the chart
+## Usage
 
+### Using Makefile
+
+```shell
+# See all available commands
+make help
+
+# Install the chart
+make install
+
+# Install with custom values
+make install ARGS="-f custom-values.yaml"
+
+# Upgrade the chart
+make upgrade
+
+# Uninstall the chart
+make uninstall
+
+# Watch for changes and run integration tests
+make watch-integration
+
+# Watch for changes and run all specs
+make watch-rspec
 ```
+
+### Using Helm directly
+
+```shell
+# Install the chart
 helm install gitlab-zoekt .
+
+# Install with custom values
+helm install gitlab-zoekt . -f custom-values.yaml
 ```
 
-## Enable Lefthook
+### Enable Lefthook
 
 ```shell
 lefthook install
 ```
 
+## Architecture
+
+The GitLab Zoekt Helm chart deploys a code search engine with a modern, scalable architecture.
+
+### Key Components
+
+1. **StatefulSet Pod** containing:
+   - **Indexer**: Creates and maintains search indices from Git repositories
+   - **Webserver**: Serves search queries against the indexed data
+   - **Internal Gateway**: Routes requests between indexer and webserver within the pod
+
+2. **External Gateway (Deployment)**:
+   - Routes external traffic to the StatefulSet pods
+   - Provides direct node addressing via `/nodes/[node-name]/[path]`
+   - Enables federated search capabilities
+
+The architecture features:
+- Federated search with gRPC streaming for efficient multi-node searches
+- Self-registering node system for easy scaling
+- Configurable security with TLS and basic authentication
+
+[Read the detailed architecture documentation](doc/architecture.md)
+
 ## Detailed documentation
 
+- [Architecture Overview](doc/architecture.md)
 - [How to enable LoadBalancer](doc/load_balancer.md)
 
 ## Decision Making
@@ -44,7 +99,10 @@ A dependency maintainer has the same responsibilities as a regular maintainer, b
 
 All changes need to result in a working chart, and the impact of the change in dependency versions needs to be fully understood by the dependency maintainer. Individuals that are already chart reviewers are good candidates to become dependency maintainers.
 
-| Username |
-| -- |
-| @terrichu |
-| @johnmason |
+| Username      |
+| --            |
+| @terrichu     |
+| @johnmason    |
+| @arturoherrero |
+| @maddievn |
+| @sdungarwal |

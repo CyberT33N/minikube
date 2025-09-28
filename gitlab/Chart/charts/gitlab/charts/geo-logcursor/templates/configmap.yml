@@ -67,6 +67,7 @@ data:
         ssl_url: {{ .gravatar.sslUrl }}
       {{- include "gitlab.appConfig.extra" . | nindent 6 }}
       {{- end }}
+      {{- include "gitlab.appConfig.oidcProvider.configuration" $ | nindent 6 }}
       ## Object storage not needed by geo-logcursor
       artifacts:
       lfs:
@@ -93,7 +94,8 @@ data:
         path: "tmp/backups"   # Relative paths are relative to Rails.root (default: tmp/backups/)
       monitoring:
         ip_whitelist:
-          - 0.0.0.0/0
+          - "0.0.0.0/0"
+          - "::/0"
         sidekiq_exporter:
   configure: |
     {{- include "gitlab.scripts.configure.secrets" (dict "required" "rails-secrets" "optional" "postgres redis redis-sentinel") | nindent 4 }}

@@ -17,6 +17,8 @@ spec:
       {{- include "gitlab-zoekt.selectorLabels" . | nindent 6 }}
   serviceName: {{ include "gitlab-zoekt.fullname" . }}
   replicas: {{ .Values.replicas }}
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
   template:
     metadata:
       annotations:
@@ -38,7 +40,7 @@ spec:
       {{- if .Values.gateway.basicAuth.enabled }}
       initContainers:
         - name: create-htpasswd
-          image: {{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag }}
+          image: {{ include "gitlab-zoekt.gatewayImage" . }}
           imagePullPolicy: {{ coalesce .Values.gateway.image.pullPolicy .Values.image.pullPolicy }}
           command: ['sh', '-c', 'printf "$(cat /etc/nginx/basicauth-credentials/gitlab_username):$(openssl passwd -6 $(cat /etc/nginx/basicauth-credentials/gitlab_password))\n" > /etc/nginx/basicauth/.htpasswd']
           resources:
@@ -54,7 +56,7 @@ spec:
       containers:
         - name: zoekt-indexer
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml (merge .Values.indexer.securityContext .Values.securityContext) | nindent 12 }}
           image: {{ .Values.indexer.image.repository }}:{{ .Values.indexer.image.tag | default "latest" }}
           imagePullPolicy: {{ coalesce .Values.indexer.image.pullPolicy .Values.image.pullPolicy }}
           ports:
@@ -73,13 +75,13 @@ spec:
           volumeMounts:
           - name: zoekt-index
             mountPath: /data/index
-          {{- if .Values.indexer.internalApi.enabled }}
           - name: internal-api-secret
             readOnly: true
             mountPath: /.gitlab_shell_secret
             subPath: .gitlab_shell_secret
-          {{- end }}
           env:
+          - name: GITLAB_ZOEKT_MODE
+            value: "indexer"
           {{- if .Values.indexer.googleCloudProfiler.enabled }}
           - name: GOOGLE_CLOUD_PROFILER_ENABLED
             value: "true"
@@ -88,15 +90,13 @@ spec:
           - name: {{ $envName }}
             value: {{ $envValue | quote }}
           {{- end }}
-          {{- if .Values.indexer.internalApi.enabled }}
           - name: GITLAB_URL
             value: {{ template "gitlab-zoekt.internalApi.gitlabUrl" . }}
           - name: SERVICE_URL
             value: {{ template "gitlab-zoekt.internalApi.serviceUrl" . }}
-          {{- end }}
         - name: zoekt-webserver
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml (merge .Values.webserver.securityContext .Values.securityContext) | nindent 12 }}
           image: {{ .Values.webserver.image.repository }}:{{ .Values.webserver.image.tag | default "latest" }}
           imagePullPolicy: {{ coalesce .Values.webserver.image.pullPolicy .Values.image.pullPolicy }}
           ports:
@@ -104,18 +104,24 @@ spec:
               name: webserver
           livenessProbe:
             httpGet:
-              path: /
+              path: /healthz
               port: {{ .Values.webserver.listen.port }}
           readinessProbe:
             httpGet:
-              path: /
+              path: /healthz
               port: {{ .Values.webserver.listen.port }}
           resources:
             {{- toYaml (merge .Values.webserver.resources .Values.resources) | nindent 12 }}
           volumeMounts:
           - name: zoekt-index
             mountPath: /data/index
+          - name: internal-api-secret
+            readOnly: true
+            mountPath: /.gitlab_shell_secret
+            subPath: .gitlab_shell_secret
           env:
+          - name: GITLAB_ZOEKT_MODE
+            value: "webserver"
           {{- if .Values.webserver.googleCloudProfiler.enabled }}
           - name: GOOGLE_CLOUD_PROFILER_ENABLED
             value: "true"
@@ -127,7 +133,7 @@ spec:
         - name: zoekt-internal-gateway
           securityContext:
             {{- toYaml .Values.gateway.securityContext | nindent 12 }}
-          image: {{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag }}
+          image: {{ include "gitlab-zoekt.gatewayImage" . }}
           imagePullPolicy: {{ coalesce .Values.gateway.image.pullPolicy .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.gateway.listen.port }}
@@ -212,14 +218,12 @@ spec:
           secret:
             secretName: {{ include "gitlab-zoekt.basicAuth.secretName" . }}
         {{- end }}
-      {{- if .Values.indexer.internalApi.enabled }}
         - name: internal-api-secret
           secret:
             secretName: {{ template "gitlab-zoekt.internalApi.secretName" . }}
             items:
               - key: {{ template "gitlab-zoekt.internalApi.secretKey" . }}
                 path: ".gitlab_shell_secret"
-      {{- end }}
   volumeClaimTemplates:
   - metadata:
       name: zoekt-index

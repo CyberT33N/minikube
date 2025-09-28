@@ -69,6 +69,17 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Gateway image
+*/}}
+{{- define "gitlab-zoekt.gatewayImage" -}}
+{{- if .Values.gateway.image.digest }}
+{{- printf "%s@%s" .Values.gateway.image.repository .Values.gateway.image.digest }}
+{{- else }}
+{{- printf "%s:%s" .Values.gateway.image.repository .Values.gateway.image.tag }}
+{{- end }}
+{{- end}}
+
+{{/*
 External Gateway svc name
 */}}
 {{- define "gitlab-zoekt.gatewaySvc" -}}
@@ -149,25 +160,24 @@ Create the name of the map to use for zoekt gateway
 {{- end -}}
 
 {{- define "gitlab-zoekt.internalApi.secretName" -}}
-{{- if .Values.indexer.internalApi.secretName }}
+{{- if empty .Values.indexer.internalApi.secretName }}
+  {{- fail "indexer.internalApi.secretName is required and cannot be empty. Please provide the name of the secret containing your GitLab shell secret." -}}
+{{- end }}
 {{- printf "%s" (tpl .Values.indexer.internalApi.secretName $) -}}
-{{- else -}}
-{{- printf "%s-internal-api-secret-name" .Release.Name -}}
-{{- end -}}
 {{- end -}}
 
 {{- define "gitlab-zoekt.internalApi.secretKey" -}}
-{{- if .Values.indexer.internalApi.secretKey }}
+{{- if empty .Values.indexer.internalApi.secretKey }}
+  {{- fail "indexer.internalApi.secretKey is required and cannot be empty. Please provide the key name within the secret that contains the GitLab shell secret value." -}}
+{{- end }}
 {{- printf "%s" (tpl .Values.indexer.internalApi.secretKey $) -}}
-{{- else -}}
-{{- printf "%s-internal-api-secret-key" .Release.Name -}}
-{{- end -}}
 {{- end -}}
 
 {{- define "gitlab-zoekt.internalApi.gitlabUrl" -}}
-{{- if .Values.indexer.internalApi.gitlabUrl }}
+{{- if empty .Values.indexer.internalApi.gitlabUrl }}
+  {{- fail "indexer.internalApi.gitlabUrl is required and cannot be empty. Please provide the internal URL to connect to GitLab." -}}
+{{- end }}
 {{- printf "%s" (tpl .Values.indexer.internalApi.gitlabUrl $) -}}
-{{- end -}}
 {{- end -}}
 
 {{- define "gitlab-zoekt.internalApi.serviceUrl" -}}

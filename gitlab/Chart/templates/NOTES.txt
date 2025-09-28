@@ -16,14 +16,26 @@ https://docs.gitlab.com/charts/installation/index.html#use-the-reference-archite
 
 {{- /* PostgreSQL minimum version change */}}
 {{ $NOTICE }}
-The minimum required version of PostgreSQL is now 13. See https://gitlab.com/gitlab-org/charts/gitlab/-/blob/master/doc/installation/upgrade.md for more details.
+The minimum required version of PostgreSQL is now 16. See https://docs.gitlab.com/charts/installation/upgrade.html for more details.
 
-{{- /* If the Container Registry metadata database is enabled, note it is not production ready */}}
+{{- /* If the Container Registry metadata database is enabled */}}
 {{- if eq .Values.registry.database.enabled true }}
 {{ $WARNING }}
-The Container Registry metadata database has been enabled. Please note that it is a beta feature.
+The Container Registry metadata database has been enabled.
 Carefully review the documentation https://docs.gitlab.com/charts/charts/registry/metadata_database.html before enabling the registry database in production!
 If you encounter a problem with either the import or operation of the registry, please add a comment in the feedback issue https://gitlab.com/gitlab-org/gitlab/-/issues/423459#supported-feature-status.
+{{- end }}
+
+{{- /* If the Container Registry database load balancing is enabled */}}
+{{- if eq .Values.registry.database.loadBalancing.enabled true }}
+{{ $WARNING }}
+The Container Registry database load balancing feature has been enabled. This is an experimental feature under active development and must not be used in production.
+{{- end }}
+
+{{- /* If the Container Registry database metrics is enabled */}}
+{{- if eq .Values.registry.database.metrics.enabled true }}
+{{ $WARNING }}
+The Container Registry database metrics feature has been enabled. This is an experimental feature under active development and must not be used in production.
 {{- end }}
 
 {{- /* Notifications endpoint threshold should use maxretries instead */ -}}
@@ -51,6 +63,9 @@ The user should ensure all necessary secrets are created according to documentat
 {{- if or .Values.gitlab.webservice.enabled .Values.registry.enabled .Values.global.minio.enabled }}
 {{-   if not (or .Values.global.ingress.configureCertmanager (include "gitlab.ingress.tls.configured" .)) }}
 {{ $WARNING }}
+{{-     if (eq (include "gitlab.global.ingress.tls.enabled" .) "false") }}
+TLS is globaly disabled.
+{{-     else }}
 Automatic TLS certificate generation with cert-manager is disabled.
 One or more of the components does not have a TLS certificate Secret configured.
 As a result, Self-signed certificates were generated for these components.
@@ -80,6 +95,7 @@ OR all of:
 {{- end }}
 {{- if $.Values.global.kas.enabled }}
 - gitlab.kas.ingress.tls.secretName
+{{- end }}
 {{- end }}
 
 {{- if (index .Values "gitlab-runner").install }}
@@ -147,7 +163,26 @@ redis:
     https://docs.gitlab.com/charts/installation/upgrade.html#use-of-globalredispassword
 {{- end -}}
 
-{{- /* run deprecations */}}
-{{ include "gitlab.deprecations" . }}
+{{/*
+Warn that `global.openbao.enabled` is present and true, noting an Experimenal feature.
+*/}}
+{{- if (pluck "enabled" .Values.global.openbao | first) }}
+{{ $WARNING }}
+openbao:
+  You have enabled the configuration of OpenBao. This feature is currently Experimental, and entirely unsupported.
+  See https://docs.gitlab.com/policy/development_stages_support/#experiment
+{{- end -}}
+
+{{- $minHelm := "3.17" }}
+{{- if semverCompare (printf "<%s" $minHelm) .Capabilities.HelmVersion.Version }}
+{{ $WARNING }}
+helm:
+  GitLab chart now recommends Helm {{ $minHelm }}+. Please make sure to update your current Helm version {{ .Capabilities.HelmVersion.Version }}.
+  Please check the release notes and test your configuration before upgrading, because Helm {{ $minHelm }}
+  changed how some values are being merged.
+{{- end }}
+
+{{- /* run removals */}}
+{{ include "gitlab.removals" . }}
 {{- /* run checkConfig */}}
 {{ include "gitlab.checkConfig" . }}

@@ -10,7 +10,7 @@ to the service name
 {{- if .redisMergedConfig.host -}}
 {{-   .redisMergedConfig.host -}}
 {{- else -}}
-{{-   $name := default "redis" .Values.redis.serviceName -}}
+{{-   $name := default "redis" (.Values.redis).serviceName -}}
 {{-   $redisRelease := .Release.Name -}}
 {{-   if contains $name $redisRelease -}}
 {{-     $redisRelease = .Release.Name | trunc 63 | trimSuffix "-" -}}
@@ -32,6 +32,16 @@ to 6379 default
 {{- end -}}
 
 {{/*
+Return the redis database
+If the redis database is provided, it will use that, otherwise it will fallback
+to 0 default
+*/}}
+{{- define "gitlab.redis.database" -}}
+{{- include "gitlab.redis.configMerge" . -}}
+{{- default 0 .redisMergedConfig.database -}}
+{{- end -}}
+
+{{/*
 Return the redis scheme, or redis. Allowing people to use rediss clusters
 */}}
 {{- define "gitlab.redis.scheme" -}}
@@ -49,7 +59,34 @@ Return the redis scheme, or redis. Allowing people to use rediss clusters
 Return the redis url.
 */}}
 {{- define "gitlab.redis.url" -}}
-{{ template "gitlab.redis.scheme" . }}://{{ template "gitlab.redis.url.user" . }}{{ template "gitlab.redis.url.password" . }}{{ template "gitlab.redis.host" . }}:{{ template "gitlab.redis.port" . }}
+{{ template "gitlab.redis.scheme" . }}://{{ template "gitlab.redis.url.user" . }}{{ template "gitlab.redis.url.password" . }}{{ template "gitlab.redis.host" . }}:{{ template "gitlab.redis.port" . }}/{{ template "gitlab.redis.database" . }}
+{{- end -}}
+
+{{/*
+Return the Redis connection timeout.
+*/}}
+{{- define "gitlab.redis.connectTimeout" -}}
+{{- if .Values.global.redis.connectTimeout -}}
+{{ .Values.global.redis.connectTimeout }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the Redis read timeout.
+*/}}
+{{- define "gitlab.redis.readTimeout" -}}
+{{- if .Values.global.redis.readTimeout -}}
+{{ .Values.global.redis.readTimeout }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the Redis write timeout.
+*/}}
+{{- define "gitlab.redis.writeTimeout" -}}
+{{- if .Values.global.redis.writeTimeout -}}
+{{ .Values.global.redis.writeTimeout }}
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -107,6 +144,7 @@ sentinels:
 {{-   if not (kindIs "map" (get $.redisMergedConfig "password")) -}}
 {{-     $_ := set $.redisMergedConfig "password" $.Values.global.redis.auth -}}
 {{-   end -}}
+{{- $_ := set $.redisMergedConfig "database" (default 0 .Values.global.redis.database) -}}
 {{- range $key := keys $.Values.global.redis.auth -}}
 {{-   if not (hasKey $.redisMergedConfig.password $key) -}}
 {{-     $_ := set $.redisMergedConfig.password $key (index $.Values.global.redis.auth $key) -}}
@@ -124,8 +162,10 @@ Return Sentinel list in format for Workhorse
 {{- define "gitlab.redis.workhorse.sentinel-list" }}
 {{- include "gitlab.redis.selectedMergedConfig" . -}}
 {{- $sentinelList := list }}
+{{- $scheme := default "redis" .redisMergedConfig.scheme }}
 {{- range $i, $entry := .redisMergedConfig.sentinels }}
-  {{- $sentinelList = append $sentinelList (quote (print "tcp://" (trim $entry.host) ":" ( default 26379 $entry.port | int ) ) ) }}
+  {{- $sentinel := printf "%s://%s:%d" $scheme (trim $entry.host) ($entry.port | default 26379 | int) }}
+  {{- $sentinelList = append $sentinelList ($sentinel | quote) }}
 {{- end }}
 {{- $sentinelList | join "," }}
 {{- end -}}

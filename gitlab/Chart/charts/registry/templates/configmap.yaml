@@ -10,7 +10,7 @@ metadata:
 data:
   configure: |-
     {{- .Values.init.script | nindent 4 }}
-  config.yml: |
+  config.yml.tpl: |
     version: 0.1
     log:
       {{ toYaml .Values.log | nindent 6 | trim }}
@@ -24,6 +24,9 @@ data:
         key: /etc/docker/registry/tls/tls.key
         {{- if and .Values.tls.clientCAs (kindIs "slice" .Values.tls.clientCAs) }}
         clientCAs: {{- toYaml .Values.tls.clientCAs | nindent 10 }}
+        {{- end }}
+        {{- if and .Values.tls.cipherSuites (kindIs "slice" .Values.tls.cipherSuites) }}
+        ciphersuites: {{- toYaml .Values.tls.cipherSuites | nindent 10 }}
         {{- end }}
         minimumTLS: {{ default "tls1.2" .Values.tls.minimumTLS | quote }}
       {{- end }}
@@ -147,15 +150,18 @@ data:
       {{ range $index, $v := .Values.middleware.storage }}
       - name: {{ $v.name }}
         options: {{ omit $v.options "privatekeySecret" "privatekey" | toYaml | nindent 10 }}
+          {{- if $v.options.privatekeySecret }}
           privatekey: {{ printf "/etc/docker/registry/middleware.storage/%d/%s" $index $v.options.privatekeySecret.key }}
+          {{ end }}
       {{ end }}
     {{- end }}
     {{- include "registry.database.config" $ | nindent 4 }}
     {{- include "registry.gc.config" $ | nindent 4 }}
     {{- include "registry.redis.config" $ | nindent 4}}
+    {{- include "registry.rateLimiter.config" $ | nindent 4 }}
 
   # minimal configuration, in order to do database migrations
-  migrations-config.yml: |
+  migrations-config.yml.tpl: |
     version: 0.1
     log:
       {{ toYaml .Values.log | nindent 6 | trim }}

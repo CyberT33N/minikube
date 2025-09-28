@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ printf "%s-gateway" (include "gitlab-zoekt.fullname" .) }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "gitlab-zoekt.labels" . | nindent 4 }}
     {{- include "gitlab.standardLabels" . | nindent 4 }}
@@ -15,6 +16,9 @@ spec:
   selector:
     matchLabels:
       {{- include "gitlab-zoekt.gatewaySelectorLabels" . | nindent 6 }}
+
+  strategy:
+    {{- toYaml .Values.gateway.updateStrategy | nindent 4 }}
   template:
     metadata:
       annotations:
@@ -25,11 +29,15 @@ spec:
       labels:
         {{- include "gitlab-zoekt.gatewaySelectorLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: zoekt-external-gateway
           securityContext:
             {{- toYaml .Values.gateway.securityContext | nindent 12 }}
-          image: {{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag }}
+          image: {{ include "gitlab-zoekt.gatewayImage" . }}
           imagePullPolicy: {{ coalesce .Values.gateway.image.pullPolicy .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.gateway.listen.port }}
@@ -69,6 +77,18 @@ spec:
               subPath: tls.key
               readOnly: true
             {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       volumes:
         - name: nginx-conf
           configMap:

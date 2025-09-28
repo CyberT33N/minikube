@@ -1,3 +1,353 @@
+## v0.80.1 (2025-09-04)
+
+### New features
+
+- Update GitLab Runner version to v18.3.1
+
+## v0.80.0 (2025-08-21)
+
+### New features
+
+- Update GitLab Runner version to v18.3.0
+
+## v0.79.0 (2025-07-12)
+
+### New features
+
+- Update GitLab Runner version to v18.2.0
+
+### Bug fixes
+
+- Restore namespace separation capability for GitLab Runner [!519](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/519)
+
+## v0.78.1 (2025-06-26)
+
+### New features
+
+- Update GitLab Runner version to v18.1.1
+
+## v0.78.0 (2025-06-19)
+
+### New features
+
+- Update GitLab Runner version to v18.1.0
+
+### Maintenance
+
+- Update CHANGELOG to take in account 0.76.x to 0.77.x releases [!517](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/517)
+
+## v0.77.3 (2025-06-11)
+
+### New features
+
+- Update GitLab Runner version to v18.0.3
+
+## v0.76.3 (2025-06-11)
+
+### New features
+
+- Update GitLab Runner version to v17.11.3
+
+## v0.75.2 (2025-06-11)
+
+### New features
+
+- Update GitLab Runner version to v17.10.2
+
+## v0.76.2 (2025-05-23)
+
+### New features
+
+- Update GitLab Runner version to v17.11.2
+
+## v0.77.2 (2025-05-22)
+
+### New features
+
+- Update GitLab Runner version to v18.0.2
+
+## v0.77.1 (2025-05-16)
+
+### New features
+
+- Update GitLab Runner version to v18.0.1
+
+## v0.77.0 (2025-05-09)
+
+### New features
+
+- Update GitLab Runner version to v18.0.0
+- implement configurable ServiceMonitor namespace [!503](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/503) (Aleksandar Pesic @peske)
+
+### Maintenance
+
+- Remove registration token and deprecated property from values.yaml [!515](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/515)
+
+## v0.76.1 (2025-05-05)
+
+### New features
+
+- Update GitLab Runner version to v17.11.1
+
+## v0.76.0 (2025-04-17)
+
+### New features
+
+- Update GitLab Runner version to v17.11.0
+
+## v0.75.1 (2025-03-27)
+
+### New features
+
+- Update GitLab Runner version to v17.10.1
+
+## v0.75.0 (2025-03-14)
+
+### New features
+
+- Update GitLab Runner version to v17.10.0
+
+## v0.74.0 (2025-02-20)
+
+### New features
+
+- Update GitLab Runner version to v17.9.0
+- Add extra containers [!494](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/494)
+
+### Bug fixes
+
+- Improve authentication token detection [!513](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/513)
+
+### Maintenance
+
+- Update liveness and readiness probe doc [!512](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/512)
+- Increase default period for livenessProbe [!511](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/511)
+- Run CI jobs in kubernetes [!504](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/504)
+
+## v0.73.0 (2025-01-10)
+
+### New features
+
+- Update GitLab Runner version to v17.8.0
+- Add deploymentLabels interpolation [!502](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/502) (Sarafa Lawal @afaras72)
+
+## v0.71.0 (2024-11-15)
+
+### New features
+
+- Update GitLab Runner version to v17.6.0
+
+### Bug fixes
+
+- fix: Change interpreter of session-server scripts to bash [!495](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/495) (Lukas Rath @rusLukasRath)
+- Fix session server ingress annotations [!498](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/498) (Miguel Sacristán @tete17)
+
+### Maintenance
+
+- Update CHANGELOG after multiple patches [!500](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/500)
+- Remove gitlab chart deps.io update trigger [!497](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/497)
+- Update CONTRIBUTING.md and LICENSE [!501](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/501)
+
+## v0.70.3 (2024-11-01)
+
+### New features
+
+- Update GitLab Runner version to v17.5.3
+
+## v0.70.2 (2024-10-23)
+
+### New features
+
+- Update GitLab Runner version to v17.5.2
+
+## v0.69.2 (2024-10-23)
+
+### New features
+
+- Update GitLab Runner version to v17.4.2
+
+## v0.69.1 (2024-10-23)
+
+### New features
+
+- Update GitLab Runner version to v17.4.1
+
+## v0.68.3 (2024-10-23)
+
+### New features
+
+- Update GitLab Runner version to v17.3.3
+
+## v0.68.2 (2024-10-23)
+
+### New features
+
+- Update GitLab Runner version to v17.3.2
+
+## v0.67.3 (2024-10-23)
+
+### New features
+
+- Update GitLab Runner version to v17.2.3
+
+## v0.67.2 (2024-10-23)
+
+### New features
+
+- Update GitLab Runner version to v17.2.2
+
+## v0.66.2 (2024-10-23)
+
+### New features
+
+- Update GitLab Runner version to v17.1.2
+
+## v0.65.3 (2024-10-23)
+
+### New features
+
+- Update GitLab Runner version to v17.0.3
+
+## v0.64.4 (2024-10-23)
+
+### New features
+
+- Update GitLab Runner version to v16.11.4
+
+## v0.63.1 (2024-10-23)
+
+### New features
+
+- Update GitLab Runner version to v16.10.1
+
+## v0.62.2 (2024-10-23)
+
+### New features
+
+- Update GitLab Runner version to v16.9.2
+
+## v0.70.1 (2024-10-18)
+
+### New features
+
+- Update GitLab Runner version to v17.5.1
+
+## v0.70.0 (2024-10-17)
+
+### New features
+
+- Update GitLab Runner version to v17.5.0
+- Add podlabels interpolation [!492](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/492) (Ivan Katliarchuk @Ikatliarchuk)
+
+### Other changes
+
+- Add Ingress support for Session Server [!490](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/490) (Ummet Civi @ummetcivi)
+
+## v0.69.0 (2024-09-19)
+
+### New features
+
+- Update GitLab Runner version to v17.4.0
+
+### Bug fixes
+
+- Add env vars if secret is provided [!489](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/489)
+- Revert the system_id generation [!488](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/488)
+- Use a more generic approach to APISERVER calls [!487](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/487) (Zadjad Rezai @zadjadr)
+
+### Maintenance
+
+- Enable by default the `unregisterRunners` property and document its behavior [!441](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/441)
+
+### Other changes
+
+- runtimeClassName for deployments [!485](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/485) (Piotr Roszatycki @dex4er-user)
+
+## v0.68.1 (2024-08-21)
+
+### New features
+
+- Update GitLab Runner version to v17.3.1
+
+### Bug fixes
+
+- Add env vars if secret is provided [!489](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/489)
+- Revert the system_id generation [!488](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/488)
+
+## v0.68.0 (2024-08-09)
+
+### New features
+
+- Update GitLab Runner version to v17.3.0
+- Add support for probe-level termination grace period [!484](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/484) (panos @panos--)
+- Generate system id when installing GitLab Runner through the Helm Chart [!417](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/417)
+
+### Bug fixes
+
+- Sanitize server session IP Address [!481](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/481)
+
+### Maintenance
+
+- Merge back 0.64, 0.65, 0.66 and 0.67 patches in main branch [!486](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/486)
+- Remove env vars if secret is provided [!482](https://gitlab.com/gitlab-org/charts/gitlab-runner/-/merge_requests/482) (Juan José Ruiz Romero @jjotah)
+
+## v0.67.1 (2024-07-26)
+
+### New features
+
+- Update GitLab Runner version to v17.2.1
+
+## v0.66.1 (2024-07-26)
+
+### New features
+
+- Update GitLab Runner version to v17.1.1
+
+## v0.65.2 (2024-07-26)
+
+### New features
+
+- Update GitLab Runner version to v17.0.2
+
+## v0.64.3 (2024-07-26)
+
+### New features
+
+- Update GitLab Runner version to v16.11.3
+
+## v0.67.0 (2024-07-18)
+
+### New features
+
+- Update GitLab Runner version to v17.2.0
+- Make livenessProbe and readinessProbe configurable !483
+- Add support for different service types for session-server !476 (Ummet Civi @ummetcivi)
+- Ignore timeout on verify command for the livenessProbe !457 (Thomas de Grenier de Latour @thomasgl-orange)
+
+### Bug fixes
+
+- Fix the register-the-runner script !479 (Jeremy Huntwork @jhuntwork)
+
+### Maintenance
+
+- Remove registration token integration test !477
+
+## v0.64.2 (2024-07-07)
+
+### New features
+
+- Update GitLab Runner version to v16.11.2
+
+### Maintenance
+
+- Remove registration token integration test !477
+
+## v0.65.1 (2024-07-06)
+
+### New features
+
+- Update GitLab Runner version to v17.0.1
+
 ## v0.66.0 (2024-06-20)
 
 ### New features

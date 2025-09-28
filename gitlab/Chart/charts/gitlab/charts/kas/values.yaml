@@ -7,6 +7,8 @@ global:
   ingress: {}
   kas:
     enabled: true
+  workspaces:
+    enabled: false
   redis:
     # host: '0.0.0.0'
     auth: {}
@@ -14,6 +16,8 @@ global:
     # kas:
       # name: kas.example.com
       # https: true
+    # workspaces:
+      # name: workspaces.example.com
 
 init:
   image: {}
@@ -22,7 +26,11 @@ init:
   resources:
     requests:
       cpu: 50m
-  containerSecurityContext: {}
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    capabilities:
+      drop: [ "ALL" ]
 
 hpa:
   # targetAverageValue: 100m  # DEPRECATED: in favor of `hpa.cpu.targetAverageValue` below
@@ -39,6 +47,11 @@ hpa:
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 300
+  # When Cluster Autoscaler (CA) wants to shut down a node, it only waits for up to 10 minutes for Pods
+  # to shut down and then terminates them anyway.
+  # This might not be enough for kas to drain all proxied connections.
+  # Hence, you might want to configure CA to not evict kas.
+  safeToEvict: "true"
 
 keda:
   enabled: false
@@ -65,7 +78,9 @@ ingress:
   annotations: {}
   tls: {}
   agentPath: /
+  workspacesServerApiPath: /workspaces
   k8sApiPath: /k8s-proxy
+  autoflowCodecServerApiPath: /autoflow/codec-server
 maxReplicas: 10
 maxUnavailable: 1
 minReplicas: 2
@@ -79,13 +94,15 @@ extraEnvFrom: {}
 resources:
   requests:
     cpu: 100m
-    memory: 100M
+    memory: 256Mi
 service:
   externalPort: 8150
   internalPort: 8150
+  workspacesServerPort: 8160
   apiInternalPort: 8153
   kubernetesApiPort: 8154
   privateApiPort: 8155
+  autoflowCodecServerApiPort: 8142
   type: ClusterIP
   # loadBalancerIP:
   # loadBalancerSourceRanges:
@@ -93,6 +110,10 @@ metrics:
   enabled: true
   path: /metrics
   serviceMonitor:
+    enabled: false
+    additionalLabels: {}
+    endpointConfig: {}
+  podMonitor:
     enabled: false
     additionalLabels: {}
     endpointConfig: {}
@@ -106,6 +127,10 @@ serviceAccount:
   enabled: false
   create: false
   annotations: {}
+  ## Used for local override of global ServiceAccount token mounting
+  # automountServiceAccountToken: false
+  ## Name to be used for serviceAccount, otherwise defaults to chart fullname
+  # name:
 # Tolerations for pod scheduling
 tolerations: []
 workhorse: {}
@@ -117,9 +142,31 @@ workhorse: {}
 # merged with the default kas config
 customConfig: {}
 
+websocketToken: {}
+  # secret:
+  # key:
+
+## Configure AutoFlow. AutoFlow is a GitLab internal-use experiment.
+autoflow: {}
+  # enabled: true
+  # temporal:
+  #   namespace: 'xxx'
+  #   workerMtls:
+  #     secretName:
+  #   workflowDataEncryption:
+  #     secret:
+  #     key:
+  #     codecServer:
+  #       authorizedUserEmails: ["maintainer@gitlab.example.com"]
+
 privateApi: {}
   # secret:
   # key:
+
+workspaces:
+  listenGracePeriod: "1s"
+  shutdownGracePeriod: "300s"
+
 deployment:
   terminationGracePeriodSeconds: 300
   strategy: {}
@@ -131,13 +178,16 @@ securityContext:
   runAsGroup: 65532
   fsGroup: 65532
   # fsGroupChangePolicy: OnRootMismatch
+  seccompProfile:
+    type: "RuntimeDefault"
 
 ## Allow to overwrite the specific security context under which the container is running.
 containerSecurityContext:
   runAsUser: 65532
-
-redis:
-  enabled: true
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  capabilities:
+    drop: [ "ALL" ]
 
 networkpolicy:
   enabled: false
@@ -152,6 +202,19 @@ networkpolicy:
 affinity:
   podAntiAffinity:
     topologyKey:
+  nodeAffinity:
+       key:
+       values:
 
 # Priority class assigned to pods
 priorityClassName: ""
+
+## Topology spread constraints rely on node labels to identify the topology domain(s) that each Node is in.
+## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
+topologySpreadConstraints: []
+ # - labelSelector:
+ #     matchLabels:
+ #       app: name
+ #     maxSkew: 1
+ #     topologyKey: topology.kubernetes.io/zone
+ #     whenUnsatisfiable: DoNotSchedule

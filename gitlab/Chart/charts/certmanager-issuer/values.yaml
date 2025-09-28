@@ -14,7 +14,17 @@ resources:
 # Priority class assigned to pods
 priorityClassName: ""
 
+containerSecurityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  capabilities:
+    drop: [ "ALL" ]
+
 common:
   labels: {}
 
 useNewIngressForCerts: false
+
+ttlSecondsAfterFinished: 1800

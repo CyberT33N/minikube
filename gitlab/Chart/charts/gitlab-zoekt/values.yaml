@@ -10,45 +10,52 @@ image:
   pullPolicy: IfNotPresent
 indexer:
   image:
-    repository: registry.gitlab.com/gitlab-org/build/cng/gitlab-zoekt-indexer
-    tag: v0.5.0-d4157
+    repository: registry.gitlab.com/gitlab-org/build/cng/gitlab-zoekt
+    tag: v1.4.4
   listen:
     port: 6065
   resources: {}
+  # Security context for the indexer container. Overrides global securityContext if set.
+  securityContext: {}
   googleCloudProfiler:
     enabled: false
   internalApi:
-    enabled: false
-    secretName: ''
-    secretKey: ''
+    secretName: '' # Please replace it with your secretName
+    secretKey: '' # Please replace with your secretKey
     gitlabUrl: '' # Internal URL to connect to GitLab
     serviceUrl: '' # URL to reach Zoekt service
-  environment:
-    CTAGS_COMMAND: '' # Disable ctags
 webserver:
   image:
-    repository: registry.gitlab.com/gitlab-org/build/cng/gitlab-zoekt-webserver
-    tag: v0.0.2-fcb27
+    repository: registry.gitlab.com/gitlab-org/build/cng/gitlab-zoekt
+    tag: v1.4.4
     # pullPolicy:
   listen:
     port: 6070
   resources: {}
+  # Security context for the webserver container. Overrides global securityContext if set.
+  securityContext: {}
   googleCloudProfiler:
     enabled: false
   environment: {}
 gateway:
   image:
     repository: nginx
-    tag: latest
+    tag: 1.25.5
+    pullPolicy:  # will default to `image.pullPolicy`
   listen:
     port: 8080
   replicas: 1
   resources: {}
   securityContext: {}
+  updateStrategy: # Update Strategy for Gateway Deployment
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 10%
   basicAuth:
     enabled: false
     secretName: '' # Defaults to {{ .Release.Name }}-basicauth and it must be created outside this chart
   dnsResolver: 'kube-dns.kube-system.svc.cluster.local'
+  http2: true # Whether to enable HTTP/2 support in nginx
   tls:
     certificate:
       enabled: false # Whether to use TLS for the gateway
@@ -121,6 +128,22 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+deployment:
+  podDisruptionBudget:
+    enabled: true
+    maxUnavailable: 10%
+
+statefulSet:
+  podDisruptionBudget:
+    enabled: true
+    maxUnavailable: 10%
+
+# Update Strategy for StatefulSet
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    partition: 0
 
 ingress:
   enabled: false
