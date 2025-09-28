@@ -1,12 +1,17 @@
 # Mirror GitHub to GitLab
 
 ```shell
-export GITHUB_TOKEN=ghp_xxx
+# Because gitlab is locally running with a self-signed certificate
+export NODE_TLS_REJECT_UNAUTHORIZED=0
+
+# https://github.com/settings/tokens
+export GITHUB_TOKEN='ghp_xxx'
 # https://gitlab.local.com/-/user_settings/personal_access_tokens?page=1&state=active&sort=expires_asc
-export GITLAB_TOKEN=glpat_xxx
+export GITLAB_TOKEN='glpat_xxx'
 # https://gitlab.local.com
-export GITLAB_BASE_URL=http://<gitlab-host-oder-ingress>
-export GITLAB_NAMESPACE_PATH=my-root-group   # optional
+export GITLAB_BASE_URL='http://<gitlab-host-oder-ingress>'
+
+export GITLAB_NAMESPACE_PATH='my-root-group'   # optional
 export INCLUDE_FORKS=false                   # optional
 export VISIBILITY=private                    # optional: private|internal|public
 export DRY_RUN=true                          # zuerst testen
@@ -32,3 +37,59 @@ npx -y tsx /home/t33n/Projects/environments/minikube/scripts/gitlab/mirror/githu
 ### Hinweise
 - Tokens werden nicht in Logs ausgegeben. Die Import-URL setzt den GitHub-Token nur intern für den Import ein.
 - Bei GitHub- oder GitLab-Rate-Limits werden automatische **Retry/Backoff**-Strategien genutzt; der Fortschritt wird mit **UTF‑8-Icons** klar geloggt.
+
+
+<br><br>
+
+# Test Connection
+
+I just fetched the TLS chain and hit `/api/v4/version`: GitLab is reachable; TLS works. The 401 without token is expected. Here are the exact curl checks to verify access and permissions.
+
+### 0) Zertifikatskette holen (einmalig)
+```bash
+openssl s_client -showcerts -connect gitlab.local.com:443 -servername gitlab.local.com </dev/null \
+| awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/{print}' > /tmp/gitlab-ca-chain.pem
+```
+
+### 1) Reachability/Health
+```bash
+GITLAB_URL=https://gitlab.local.com
+CACERT=/tmp/gitlab-ca-chain.pem
+
+curl -sS -i --cacert "$CACERT" "$GITLAB_URL/-/health" | head -n 20
+```
+Erwartung: 200 OK.
+
+### 2) API erreichbar
+```bash
+curl -sS -i --cacert "$CACERT" "$GITLAB_URL/api/v4/version"
+```
+Ohne Token kann 401 kommen; mit Token siehe unten.
+
+### 3) Auth prüfen (Token/Scopes)
+```bash
+# setze dein PAT:
+GITLAB_TOKEN='<DEIN_GITLAB_PAT_MIT_api_SCOPE>'
+
+curl -sS --cacert "$CACERT" -H "PRIVATE-TOKEN: $GITLAB_TOKEN" "$GITLAB_URL/api/v4/user"
+```
+Erwartung: 200 + JSON mit deinem Benutzer.
+
+### 4) Berechtigung „Projekt anlegen“ testen (optional)
+Erzeugt ein Testprojekt. Wenn 201 → OK; wenn 403 → dir fehlt die Berechtigung.
+```bash
+TMP=can-i-create-$RANDOM
+curl -sS -i --cacert "$CACERT" -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  -X POST "$GITLAB_URL/api/v4/projects" \
+  -d "name=$TMP" -d "visibility=private"
+```
+
+Wenn 403:
+- Prüfe, dass das PAT den Scope **api** hat (nicht nur read_api).
+- Adminbereich: `Settings → Visibility and access controls → Project creation level` darf nicht „No one“ sein.
+- `projects_limit` des Users darf nicht 0 sein.
+- Falls in eine Gruppe: User muss dort mindestens Owner sein.
+
+Kurzfazit
+- GitLab Local ist erreichbar, Zertifikate funktionieren mit `--cacert`.
+- 401 ohne Token ist normal; die 403 aus deinem Script deuten auf fehlende „Projekt anlegen“-Berechtigung oder falsche Token-Scopes hin.
