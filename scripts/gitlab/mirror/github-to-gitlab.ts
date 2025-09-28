@@ -8,6 +8,7 @@ Env vars:
   - GITLAB_TOKEN: required, Personal Access Token with api scope
   - GITLAB_BASE_URL: required, e.g. http://gitlab.minikube.local or https://gitlab.example.com
   - GITLAB_NAMESPACE_PATH: optional, group path where to create projects; if absent, use user namespace
+  - ONLY_REPO: optional, import only this GitHub repo full name (owner/name)
   - INCLUDE_FORKS: optional, 'true' to include forks (default false)
   - VISIBILITY: optional, one of 'private' | 'internal' | 'public' (default 'private')
   - DRY_RUN: optional, 'true' for no-op
@@ -90,6 +91,7 @@ interface EnvConfig {
   gitlabToken: string;
   gitlabBaseUrl: string; // without trailing slash ok
   gitlabNamespacePath?: string;
+  onlyRepoFullName?: string; // owner/name to import only this repo
   includeForks: boolean;
   visibility: 'private' | 'internal' | 'public';
   dryRun: boolean;
@@ -103,6 +105,7 @@ function readEnv(): EnvConfig {
     GITLAB_TOKEN,
     GITLAB_BASE_URL,
     GITLAB_NAMESPACE_PATH,
+    ONLY_REPO,
     INCLUDE_FORKS,
     VISIBILITY,
     DRY_RUN,
@@ -129,6 +132,7 @@ function readEnv(): EnvConfig {
     gitlabToken: GITLAB_TOKEN,
     gitlabBaseUrl: GITLAB_BASE_URL.replace(/\/$/, ''),
     gitlabNamespacePath: GITLAB_NAMESPACE_PATH,
+    onlyRepoFullName: ONLY_REPO,
     includeForks: (INCLUDE_FORKS ?? 'false').toLowerCase() === 'true',
     visibility,
     dryRun: (DRY_RUN ?? 'false').toLowerCase() === 'true',
@@ -378,7 +382,8 @@ async function createGitlabProjectWithImport(baseUrl: string, token: string, par
   defaultBranch?: string;
 }): Promise<GitlabProject> {
   const payload: Record<string, unknown> = {
-    name: params.name,
+    // Use sanitized path as display name to avoid validation errors for names starting/ending with special chars
+    name: params.path,
     path: params.path,
     visibility: normalizeVisibility(params.visibility),
     import_url: params.importUrl,
@@ -402,10 +407,18 @@ async function run(): Promise<void> {
   });
 
   const allRepos = await listAllGithubRepos(cfg.githubToken, cfg.githubUser);
-  const filtered = allRepos.filter(r => !r.archived && (cfg.includeForks || !r.fork));
+  // Optional: restrict to a single repo by full name (owner/name)
+  const selection = cfg.onlyRepoFullName
+    ? allRepos.filter(r => r.full_name.toLowerCase() === cfg.onlyRepoFullName!.toLowerCase())
+    : allRepos;
+  const filtered = selection.filter(r => !r.archived && (cfg.includeForks || !r.fork));
   const skipped = allRepos.length - filtered.length;
 
-  logInfo(`🔎 Discovered ${allRepos.length} repos; processing ${filtered.length} after filtering (${skipped} skipped)`);
+  if (cfg.onlyRepoFullName) {
+    logInfo(`🔎 Discovered ${allRepos.length} repos; restricted to ONLY_REPO=${cfg.onlyRepoFullName}; processing ${filtered.length} after filtering`);
+  } else {
+    logInfo(`🔎 Discovered ${allRepos.length} repos; processing ${filtered.length} after filtering (${skipped} skipped)`);
+  }
 
   // Prepare GitLab namespace roots
   const baseNamespace = cfg.gitlabNamespacePath ? await findGitlabNamespace(cfg.gitlabBaseUrl, cfg.gitlabToken, cfg.gitlabNamespacePath) : null;
