@@ -11,6 +11,7 @@ Env vars:
   - ONLY_REPO: optional, import only this GitHub repo full name (owner/name)
   - INCLUDE_FORKS: optional, 'true' to include forks (default false)
   - VISIBILITY: optional, one of 'private' | 'internal' | 'public' (default 'private')
+  - ENABLE_MIRROR: optional, 'true' to enable pull mirroring after import (default true)
   - DRY_RUN: optional, 'true' for no-op
   - CONCURRENCY: optional, integer (default 4)
 
@@ -18,6 +19,7 @@ Behavior:
   - Enumerates GitHub repos for the authenticated user, including orgs the user has access to
   - Creates GitLab groups for GitHub organizations (if a GITLAB_NAMESPACE_PATH is provided, orgs will be nested under it)
   - Creates GitLab projects with import_url set to GitHub HTTPS URL including token for mirroring
+  - Optionally enables automatic pull mirroring to keep repos in sync with GitHub
   - Skips existing projects (idempotent)
 */
 
@@ -94,6 +96,7 @@ interface EnvConfig {
   onlyRepoFullName?: string; // owner/name to import only this repo
   includeForks: boolean;
   visibility: 'private' | 'internal' | 'public';
+  enableMirror: boolean;
   dryRun: boolean;
   concurrency: number;
 }
@@ -108,6 +111,7 @@ function readEnv(): EnvConfig {
     ONLY_REPO,
     INCLUDE_FORKS,
     VISIBILITY,
+    ENABLE_MIRROR,
     DRY_RUN,
     CONCURRENCY,
   } = process.env;
@@ -135,6 +139,7 @@ function readEnv(): EnvConfig {
     onlyRepoFullName: ONLY_REPO,
     includeForks: (INCLUDE_FORKS ?? 'false').toLowerCase() === 'true',
     visibility,
+    enableMirror: (ENABLE_MIRROR ?? 'true').toLowerCase() === 'true',
     dryRun: (DRY_RUN ?? 'false').toLowerCase() === 'true',
     concurrency,
   };
@@ -380,6 +385,7 @@ async function createGitlabProjectWithImport(baseUrl: string, token: string, par
   importUrl: string;
   visibility: EnvConfig['visibility'];
   defaultBranch?: string;
+  enableMirror?: boolean;
 }): Promise<GitlabProject> {
   const payload: Record<string, unknown> = {
     // Use sanitized path as display name to avoid validation errors for names starting/ending with special chars
@@ -390,9 +396,37 @@ async function createGitlabProjectWithImport(baseUrl: string, token: string, par
   };
   if (params.namespaceId) payload['namespace_id'] = params.namespaceId;
   if (params.defaultBranch) payload['default_branch'] = params.defaultBranch;
+  
+  // Enable pull mirroring if requested (correct way according to GitLab API docs)
+  if (params.enableMirror) {
+    payload['mirror'] = true;
+    payload['mirror_trigger_builds'] = true;
+    payload['only_mirror_protected_branches'] = false;
+  }
 
   logInfo('📦 Creating GitLab project', { path: params.path, namespaceId: params.namespaceId ?? '(user namespace)' });
-  return await gitlabPost<GitlabProject>(baseUrl, token, '/projects', payload);
+  const project = await gitlabPost<any>(baseUrl, token, '/projects', payload);
+  
+  // Debug: Log the complete response
+  logInfo('🔍 Complete project response', project);
+  
+  // Debug: Log what we actually received
+  logInfo('🔍 Project response fields', { 
+    id: project.id, 
+    path: project.path, 
+    path_with_namespace: project.path_with_namespace,
+    hasAllFields: !!(project.id && project.path_with_namespace)
+  });
+  
+  // Ensure we have all required fields
+  if (!project.id || !project.path_with_namespace) {
+    logWarn('⚠️  Project created but missing fields, refetching', { id: project.id, path: project.path_with_namespace });
+    // Refetch the project to get complete data
+    const refetched = await gitlabGet<GitlabProject>(baseUrl, token, `/projects/${encodeURIComponent(project.id || project.path)}`);
+    return refetched;
+  }
+  
+  return project as GitlabProject;
 }
 
 async function run(): Promise<void> {
@@ -402,6 +436,7 @@ async function run(): Promise<void> {
     gitlabNamespacePath: cfg.gitlabNamespacePath ?? '(user namespace)',
     includeForks: cfg.includeForks,
     visibility: cfg.visibility,
+    enableMirror: cfg.enableMirror,
     dryRun: cfg.dryRun,
     concurrency: cfg.concurrency,
   });
@@ -486,13 +521,18 @@ async function run(): Promise<void> {
           importUrl,
           visibility: cfg.visibility,
           defaultBranch: repo.default_branch,
-        } as const;
+          enableMirror: cfg.enableMirror,
+        };
 
         if (cfg.dryRun) {
           logInfo(`📝 [dry-run] Would create: ${effectiveNamespacePath}/${targetPath} ← ${repo.full_name}`);
+          if (cfg.enableMirror) {
+            logInfo(`📝 [dry-run] Would enable pull mirroring (mirror=true) for: ${effectiveNamespacePath}/${targetPath}`);
+          }
         } else {
           const created = await createGitlabProjectWithImport(cfg.gitlabBaseUrl, cfg.gitlabToken, payload);
-          logInfo(`✅ Created: ${created.path_with_namespace} (import scheduled)`);
+          const mirrorStatus = cfg.enableMirror ? ' with pull mirroring enabled' : '';
+          logInfo(`✅ Created: ${created.path_with_namespace} (import scheduled${mirrorStatus})`);
         }
         done++;
         logInfo(`📈 Progress: ${done}/${total}`);

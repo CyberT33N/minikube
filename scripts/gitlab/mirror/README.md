@@ -29,6 +29,7 @@ Then run the script:
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
 # https://github.com/settings/tokens
+# Class Token > repo
 export GITHUB_TOKEN='ghp_xxx'
 # https://gitlab.local.com/-/user_settings/personal_access_tokens?page=1&state=active&sort=expires_asc
 export GITLAB_TOKEN='glpat_xxx'
@@ -40,7 +41,6 @@ export INCLUDE_FORKS=false                   # optional
 export VISIBILITY=private                    # optional: private|internal|public
 export DRY_RUN=true                          # zuerst testen
 export CONCURRENCY=1                        # optional
-export ONLY_REPOS=CyberT33N/ai-sdk           # optional
 
 npx -y tsx /home/t33n/Projects/environments/minikube/scripts/gitlab/mirror/github-to-gitlab.ts
 ```
